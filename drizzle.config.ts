@@ -1,6 +1,6 @@
 import { defineConfig } from 'drizzle-kit';
-import * as dotenv from 'dotenv';
-dotenv.config({ path: '../.env' }); // Adjust if .env is in nova-workflow-automation folder
+import dotenv from 'dotenv';
+dotenv.config();
 
 export default defineConfig({
   schema: './src/db/schema.ts',
