@@ -1,52 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { corsair } from "../../../../corsair";
 import { processWebhook } from "corsair";
-import crypto from "crypto";
+
 export async function POST(request: NextRequest) {
-  const url = new URL(request.url)
-  const header: Record<string, string> = {}
+  const url = new URL(request.url);
+  const header: Record<string, string> = {};
   request.headers.forEach((value, key) => {
-    header[key] = value
-  })
-  /*
-    const contenttype = request.headers.get("content-type")
-    let body: string | Record<string, unknown>
-  
-  
-    if (contenttype?.includes("application/json")) {
-      body = await request.json();
-    } else {
-      const text = await request.text();
-      body = text && text.trim() ? text : {};
-  */
-  const textBody = await request.text();
+    header[key] = value;
+  });
 
-  // --- ENTERPRISE SECURITY: WEBHOOK SIGNATURE VERIFICATION ---
-  const signature = request.headers.get("x-corsair-signature");
-  if (!signature) {
-    console.error("🚨 Webhook blocked: Missing X-Corsair-Signature header");
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
-
-  const expectedSignature = crypto
-    .createHmac("sha256", process.env.CORSAIR_WEBHOOK_SECRET || "")
-    .update(textBody)
-    .digest("hex");
-
-  // We use timingSafeEqual to prevent timing attacks from advanced hackers
-  if (signature.length !== expectedSignature.length || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
-    // console.error("🚨 Webhook blocked: Invalid cryptographic signature");
-    // console.log(`Expected: ${expectedSignature} | Received: ${signature}`);
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
-
+  const contenttype = request.headers.get("content-type");
   let body: Record<string, unknown> = {};
-  try {
-    body = JSON.parse(textBody);
-  } catch (e) {
-    console.warn("Webhook body is not valid JSON");
+
+  if (contenttype?.includes("application/json")) {
+    body = await request.json();
+  } else {
+    const text = await request.text();
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = {};
+    }
   }
-  // ---------------------------------------------------------
 
   const tenantId = "radhanath"
   // url.searchParams.get("tenantId") ||

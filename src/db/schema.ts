@@ -76,3 +76,11 @@ export const corsairEvents = pgTable('corsair_events', {
   payload: jsonb('payload').notNull().default({}),
   status: text('status'),
 });
+
+export const auditLogs = pgTable('audit_logs', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  tenantId: varchar('tenant_id', { length: 255 }).notNull(),
+  action: text('action').notNull(),
+  details: text('details'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { OpenAIAgentsProvider } from "@corsair-dev/mcp";
 import { Agent, run, tool } from "@openai/agents";
 import { corsair } from "../../../../corsair";
+import { db } from "../../../db";
+import { auditLogs } from "../../../db/schema";
 
 export async function POST(req: Request) {
   try {
@@ -35,6 +37,13 @@ export async function POST(req: Request) {
     const result = await run(agent, prompt);
 
     console.log(`🤖 [MCP Agent] Agent run complete!`);
+
+    // 5. Compliance Logging: Save a permanent record of what the Agent just did
+    await db.insert(auditLogs).values({
+      tenantId,
+      action: "AGENT_EXECUTION",
+      details: `Prompt: "${prompt}" -> Result: "${result.finalOutput}"`
+    });
 
     return NextResponse.json({
       success: true,
