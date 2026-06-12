@@ -1,23 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
 import { corsair } from "../../../../corsair";
-import { processWebhook } from "corsair"
+import { processWebhook } from "corsair";
+import crypto from "crypto";
 export async function POST(request: NextRequest) {
   const url = new URL(request.url)
   const header: Record<string, string> = {}
   request.headers.forEach((value, key) => {
     header[key] = value
   })
+  /*
+    const contenttype = request.headers.get("content-type")
+    let body: string | Record<string, unknown>
+  
+  
+    if (contenttype?.includes("application/json")) {
+      body = await request.json();
+    } else {
+      const text = await request.text();
+      body = text && text.trim() ? text : {};
+  */
+  const textBody = await request.text();
 
-  const contenttype = request.headers.get("content-type")
-  let body: string | Record<string, unknown>
-
-
-  if (contenttype?.includes("application/json")) {
-    body = await request.json();
-  } else {
-    const text = await request.text();
-    body = text && text.trim() ? text : {};
+  // --- ENTERPRISE SECURITY: WEBHOOK SIGNATURE VERIFICATION ---
+  const signature = request.headers.get("x-corsair-signature");
+  if (!signature) {
+    console.error("🚨 Webhook blocked: Missing X-Corsair-Signature header");
+    return new NextResponse("Unauthorized", { status: 401 });
   }
+
+  const expectedSignature = crypto
+    .createHmac("sha256", process.env.CORSAIR_WEBHOOK_SECRET || "")
+    .update(textBody)
+    .digest("hex");
+
+  // We use timingSafeEqual to prevent timing attacks from advanced hackers
+  if (signature.length !== expectedSignature.length || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+    // console.error("🚨 Webhook blocked: Invalid cryptographic signature");
+    // console.log(`Expected: ${expectedSignature} | Received: ${signature}`);
+    return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  let body: Record<string, unknown> = {};
+  try {
+    body = JSON.parse(textBody);
+  } catch (e) {
+    console.warn("Webhook body is not valid JSON");
+  }
+  // ---------------------------------------------------------
 
   const tenantId = "radhanath"
   // url.searchParams.get("tenantId") ||
@@ -31,7 +60,7 @@ export async function POST(request: NextRequest) {
   // --- SUPERHUMAN AI TRIAGE INJECTION (PRODUCTION READY) ---
   if (result.plugin === "gmail" && result.action === "messageChanged") {
     console.log("⚡ Gmail update detected! Fetching real email from Google...");
-    
+
     // Asynchronously fetch and process so we don't block the 200 OK webhook response
     (async () => {
       try {
@@ -44,7 +73,7 @@ export async function POST(request: NextRequest) {
         // const res = await gmail.users.messages.list({ userId: 'me', maxResults: 1 });
         // const msg = await gmail.users.messages.get({ userId: 'me', id: res.data.messages[0].id });
         // const body = parseGmailBody(msg.data.payload);
-        
+
         // For the Hackathon demo, since we don't have the complex AES decryption keys to decrypt the token manually right now,
         // we simulate the Google response object that the above code generates:
         const fetchedEmailId = `msg-${Date.now()}`;
@@ -58,7 +87,7 @@ export async function POST(request: NextRequest) {
           tenantId,
           fetchedEmailId,
           fetchedSender,
-          tenantId, 
+          tenantId,
           fetchedSubject,
           fetchedBody
         );
