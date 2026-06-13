@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Send, Hexagon } from "lucide-react";
+import Image from "next/image";
 
 interface Message {
   id: string;
@@ -108,10 +109,13 @@ export const AgentChatPanel = () => {
                 className={`flex items-end gap-2 max-w-[85%] ${isUser ? "self-end" : "self-start"}`}
               >
                 {!isUser && (
-                  <div className="w-6 h-6 rounded-md bg-gradient-to-br from-[#FF7B7B] to-[#FF9494] flex items-center justify-center shrink-0 mb-1">
-                    <Hexagon
-                      className="w-3.5 h-3.5 text-white"
-                      strokeWidth={3}
+                  <div className="w-6 h-6 rounded-md  flex items-center justify-center shrink-0 mb-1">
+                    <Image
+                      src="/logo.svg"
+                      alt="Nova"
+                      width={100}
+                      height={100}
+                      className="w-full h-full object-cover"
                     />
                   </div>
                 )}
