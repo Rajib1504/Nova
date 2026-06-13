@@ -5,6 +5,9 @@ import { motion } from "framer-motion";
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { SocialProof } from "@/components/SocialProof";
+import { FeatureOne } from "@/components/FeatureOne";
+import { FeatureTwo } from "@/components/FeatureTwo";
+import { FeatureThree } from "@/components/FeatureThree";
 
 export default function LandingPage() {
   const [theme, setTheme] = useState("light");
@@ -31,6 +34,9 @@ export default function LandingPage() {
 
       <Hero />
       <SocialProof />
+      <FeatureOne />
+      <FeatureTwo />
+      <FeatureThree />
     </div>
   );
 }

@@ -25,7 +25,7 @@ const logos = [
 
 export const SocialProof = () => {
   return (
-    <section className="relative w-full py-10 flex flex-col items-center justify-center overflow-hidden z-20 mt-12 mb-24">
+    <section className="relative w-full py-20 flex flex-col items-center justify-center overflow-hidden z-20">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
