@@ -22,9 +22,7 @@ export const Footer = () => {
           {/* Brand Column */}
           <div className="flex flex-col max-w-xs">
             <div className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF7B7B] to-[#FF9494] flex items-center justify-center shadow-lg">
-                <Hexagon className="w-6 h-6 text-white" strokeWidth={2.5} />
-              </div>
+              <img src="/logo.svg" alt="logo" className="w-10 h-10" />
               <span className="text-2xl font-black font-heading tracking-tighter text-gray-900 dark:text-white">
                 NOVA
               </span>
