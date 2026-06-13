@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 
 import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
+import { SocialProof } from "@/components/SocialProof";
 
 export default function LandingPage() {
   const [theme, setTheme] = useState("light");
@@ -29,6 +30,7 @@ export default function LandingPage() {
       <Navbar theme={theme} toggleTheme={toggleTheme} />
 
       <Hero />
+      <SocialProof />
     </div>
   );
 }

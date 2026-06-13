@@ -69,9 +69,9 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
 
           <BlobButton
             className="interactive"
-            blobColor="#1A1D23" // Dark background blob
-            textColor="#1A1D23" // Dark text when unhovered
-            hoverTextColor="#FFFFFF" // White text when hovered
+            blobColor="#FF7B7B"
+            textColor="#FF7B7B"
+            hoverTextColor="#FFFFFF"
           >
             <span>Initialize</span>
             <motion.svg
