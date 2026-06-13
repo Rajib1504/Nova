@@ -8,6 +8,9 @@ import { SocialProof } from "@/components/SocialProof";
 import { FeatureOne } from "@/components/FeatureOne";
 import { FeatureTwo } from "@/components/FeatureTwo";
 import { FeatureThree } from "@/components/FeatureThree";
+import { Stats } from "@/components/Stats";
+import { Testimonials } from "@/components/Testimonials";
+import { FAQ } from "@/components/FAQ";
 
 export default function LandingPage() {
   const [theme, setTheme] = useState("light");
@@ -37,6 +40,9 @@ export default function LandingPage() {
       <FeatureOne />
       <FeatureTwo />
       <FeatureThree />
+      <Stats />
+      <Testimonials />
+      <FAQ />
     </div>
   );
 }
