@@ -10,7 +10,9 @@ import { FeatureTwo } from "@/components/FeatureTwo";
 import { FeatureThree } from "@/components/FeatureThree";
 import { Stats } from "@/components/Stats";
 import { Testimonials } from "@/components/Testimonials";
+import { Pricing } from "@/components/Pricing";
 import { FAQ } from "@/components/FAQ";
+import { Footer } from "@/components/Footer";
 
 export default function LandingPage() {
   const [theme, setTheme] = useState("light");
@@ -42,7 +44,9 @@ export default function LandingPage() {
       <FeatureThree />
       <Stats />
       <Testimonials />
+      <Pricing />
       <FAQ />
+      <Footer />
     </div>
   );
 }
