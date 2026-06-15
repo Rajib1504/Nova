@@ -58,30 +58,30 @@ export const GmailCompose: React.FC<GmailComposeProps> = ({ onClose, initialTo =
         }}
         exit={{ opacity: 0, y: 100, scale: 0.95 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="fixed z-50 flex flex-col bg-white dark:bg-[#1A1D23] rounded-t-xl rounded-b-lg shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] border border-gray-200 dark:border-white/10 overflow-hidden"
+        className="fixed z-[110] flex flex-col bg-[#FFF5E4] dark:bg-[#1A1D23] rounded-t-xl rounded-b-lg shadow-[0_10px_40px_-10px_rgba(0,0,0,0.3)] dark:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.8)] border border-gray-200 dark:border-white/10 overflow-hidden max-w-[calc(100vw-32px)]"
       >
         {/* Header */}
         <div 
-          className="flex items-center justify-between px-4 py-3 bg-[#1A1D23] dark:bg-[#23232A] cursor-pointer"
+          className="flex items-center justify-between px-4 py-3 bg-[#FFF5E4] dark:bg-[#23232A] cursor-pointer border-b border-gray-200 dark:border-white/10"
           onClick={() => !isFullscreen && setIsMinimized(!isMinimized)}
         >
-          <span className="text-sm font-bold text-white">New Message</span>
-          <div className="flex items-center gap-2 text-gray-300">
+          <span className="text-sm font-bold text-gray-900 dark:text-white">New Message</span>
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-300">
             <button 
               onClick={(e) => { e.stopPropagation(); setIsMinimized(!isMinimized); setIsFullscreen(false); }}
-              className="p-1 hover:bg-white/10 rounded transition-colors"
+              className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded transition-colors"
             >
               <Minus className="w-4 h-4" />
             </button>
             <button 
-              onClick={(e) => { e.stopPropagation(); setIsFullscreen(!isFullscreen); setIsMinimized(false); }}
-              className="p-1 hover:bg-white/10 rounded transition-colors"
+              onClick={(e) => { e.stopPropagation(); setIsFullscreen(!isFullscreen); setIsFullscreen(!isFullscreen); setIsMinimized(false); }}
+              className="p-1 hover:bg-black/5 dark:hover:bg-white/10 rounded transition-colors"
             >
               <Maximize2 className="w-4 h-4" />
             </button>
             <button 
               onClick={(e) => { e.stopPropagation(); onClose(); }}
-              className="p-1 hover:bg-white/10 hover:text-red-400 rounded transition-colors"
+              className="p-1 hover:bg-black/5 hover:text-red-400 dark:hover:bg-white/10 rounded transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -90,7 +90,7 @@ export const GmailCompose: React.FC<GmailComposeProps> = ({ onClose, initialTo =
 
         {/* Body Container */}
         {!isMinimized && (
-          <div className="flex flex-col flex-1 bg-white dark:bg-[#1A1D23]">
+          <div className="flex flex-col flex-1 bg-[#FFF5E4] dark:bg-[#1A1D23]">
             {/* To Field */}
             <div className="flex items-center px-4 py-2 border-b border-gray-100 dark:border-white/5">
               <span className="text-sm text-gray-500 w-12">To</span>

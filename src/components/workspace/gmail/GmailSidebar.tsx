@@ -55,7 +55,7 @@ export const GmailSidebar: React.FC<GmailSidebarProps> = ({
         ${
           effectivelyCollapsed
             ? "w-16 px-2 items-center bg-transparent border-r border-white/20 dark:border-white/5"
-            : "w-56 px-3 bg-[#F8F9FA] dark:bg-[#1A1D23] border-r border-gray-200 dark:border-white/10 shadow-[4px_0_24px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.5)]"
+            : "w-56 px-3 bg-[#FFF5E4] dark:bg-[#1A1D23] border-r border-gray-200 dark:border-white/10 shadow-[4px_0_24px_rgba(0,0,0,0.1)] dark:shadow-[4px_0_24px_rgba(0,0,0,0.5)]"
         }`}
       >
         {/* Compose and Collapse Toggle Area */}
