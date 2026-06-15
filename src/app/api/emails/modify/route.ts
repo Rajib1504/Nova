@@ -48,10 +48,8 @@ export async function POST(req: NextRequest) {
     await (c as any).gmail.api.threads.modify({
       userId: "me",
       id: threadId,
-      requestBody: {
-        addLabelIds,
-        removeLabelIds,
-      },
+      addLabelIds,
+      removeLabelIds,
     });
 
     // Update local database to reflect changes immediately

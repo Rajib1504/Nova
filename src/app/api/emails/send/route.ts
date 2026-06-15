@@ -42,9 +42,7 @@ export async function POST(req: NextRequest) {
     // Send the email directly using the user's connected account
     const res = await (c as any).gmail.api.messages.send({
       userId: 'me',
-      requestBody: {
-        raw: encodedMessage,
-      },
+      raw: encodedMessage,
     });
 
     return NextResponse.json({ success: true, messageId: res.data.id });

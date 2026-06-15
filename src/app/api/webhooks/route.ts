@@ -87,30 +87,50 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        const { OpenAIAgentsProvider } = await import("@corsair-dev/mcp");
-        const { Agent, run, tool } = await import("@openai/agents");
-        const { createStoreEmailTool } = await import("../../../lib/agent-tools");
+        const c = corsair.withTenant(corsairTenantId);
 
-        const provider = new OpenAIAgentsProvider();
-        const tools = provider.build({ corsair, tool, tenantId: corsairTenantId });
+        console.log(`🤖 Webhook triggered fetch for tenant: ${safeTenantId}...`);
         
-        // Inject our custom storage/logging tool
-        tools.push(createStoreEmailTool(safeTenantId));
-
-        const agent = new Agent({
-          name: 'nova-email-triage',
-          model: 'gpt-4o-mini',
-          instructions: `You are Nova's background email triage agent. 
-          1. Use the Gmail tool to search for the most recent unread email.
-          2. Read its contents.
-          3. Determine if it is 'high', 'urgent', or 'normal' priority.
-          4. USE THE store_email TOOL to save the email data into the database! This is strictly required. Do not skip this step.`,
-          tools,
+        // Fetch the single most recent unread email reliably
+        const listRes = await (c as any).gmail.api.messages.list({
+          userId: 'me',
+          q: "is:unread",
+          maxResults: 1
         });
 
-        console.log(`🤖 Agent starting background triage for tenant: ${safeTenantId}...`);
-        await run(agent, "Fetch the latest email from my inbox, summarize it, and store it.");
-        console.log(`🤖 Agent background triage complete!`);
+        const messages = listRes?.messages || [];
+
+        if (messages.length === 0) {
+          console.log(`🤖 No new unread messages found for tenant ${safeTenantId}.`);
+          return;
+        }
+
+        const msg = messages[0];
+        
+        const { processAndStoreEmail } = await import("../../../lib/triage");
+        
+        // Fetch full message details
+        const msgRes = await (c as any).gmail.api.messages.get({
+          userId: 'me',
+          id: msg.id,
+          format: 'full'
+        });
+
+        if (msgRes) {
+          const headers = msgRes.payload?.headers || [];
+          const subject = headers.find((h: any) => h.name.toLowerCase() === 'subject')?.value || "No Subject";
+          const from = headers.find((h: any) => h.name.toLowerCase() === 'from')?.value || "Unknown Sender";
+          const to = headers.find((h: any) => h.name.toLowerCase() === 'to')?.value || "Unknown";
+          const dateStr = headers.find((h: any) => h.name.toLowerCase() === 'date')?.value || new Date().toISOString();
+
+          const labels = msgRes.labelIds || [];
+          const bodyText = msgRes.snippet || "";
+
+          // Pass to our deterministic triage logic (which uses OpenAI safely for categorization)
+          await processAndStoreEmail(safeTenantId, msg.id, from, to, subject, bodyText, dateStr, labels);
+        }
+        
+        console.log(`🤖 Background triage complete!`);
         
       } catch (e) {
         console.error("Failed to process background webhook triage", e);
