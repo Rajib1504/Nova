@@ -19,8 +19,9 @@ export async function POST(req: Request) {
     const provider = new OpenAIAgentsProvider();
 
     // 2. Build the tools and specifically pass the user's tenantId so Corsair knows whose accounts to use
-    // The provider automatically wraps the Corsair plugins into the official OpenAI tool format
-    const tools = provider.build({ corsair, tool, tenantId });
+    // Force the prefix to bypass Corsair SDK numeric coercion bug
+    const corsairTenantId = `user_${tenantId}`;
+    const tools = provider.build({ corsair, tool, tenantId: corsairTenantId });
 
     // 3. Create the Agent
     const agent = new Agent({

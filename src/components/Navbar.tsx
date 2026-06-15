@@ -4,6 +4,7 @@ import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Image from "next/image";
 import { MoonStar, Sun } from "lucide-react";
 import { BlobButton } from "./BlobButton";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 interface NavbarProps {
   theme: string;
@@ -13,6 +14,7 @@ interface NavbarProps {
 export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
   const { scrollY } = useScroll();
   const [isScrolled, setIsScrolled] = useState(false);
+  const { data: session } = useSession();
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 50);
@@ -22,13 +24,19 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
     <div className="fixed top-0 left-0 right-0 z-50 flex justify-center mt-4">
       <motion.nav
         initial={{ y: -100 }}
-        animate={{ y: 0 }}
+        animate={{ y: -5 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className={`w-[90%] max-w-7xl px-8 flex justify-between items-center transition-all duration-500 ease-out rounded-full ${isScrolled ? "glass py-3 border border-white/20 shadow-lg backdrop-blur-3xl bg-[var(--panel)]" : "bg-transparent py-4 border-transparent"}`}
       >
         <div className="flex items-center gap-3 interactive cursor-pointer">
           <div className="w-8 h-8">
-            <Image src="/logo.svg" alt="Nova AI" width={32} height={32} />
+            <Image
+              src="/logo.svg"
+              alt="Nova AI"
+              width={32}
+              height={32}
+              style={{ width: "auto", height: "auto" }}
+            />
           </div>
 
           <span className="text-2xl font-bold font-heading tracking-tight text-[var(--foreground)]">
@@ -67,27 +75,63 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
             </motion.span>
           </button>
 
-          <BlobButton
-            className="interactive"
-            blobColor="#FF7B7B"
-            textColor="#FF7B7B"
-            hoverTextColor="#FFFFFF"
-          >
-            <span>Initialize</span>
-            <motion.svg
-              className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M14 5l7 7m0 0l-7 7m7-7H3"
-              ></path>
-            </motion.svg>
-          </BlobButton>
+          {session ? (
+            <div className="flex items-center gap-4">
+              <a href="/dashboard">
+                <BlobButton
+                  className="interactive"
+                  blobColor="#FF7B7B"
+                  textColor="#FF7B7B"
+                  hoverTextColor="#FFFFFF"
+                >
+                  <span>Dashboard</span>
+                  <motion.svg
+                    className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M14 5l7 7m0 0l-7 7m7-7H3"
+                    />
+                  </motion.svg>
+                </BlobButton>
+              </a>
+              <button
+                onClick={() => signOut()}
+                className="text-sm font-medium text-gray-500 hover:text-red-500 transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <div onClick={() => signIn("google")}>
+              <BlobButton
+                className="interactive"
+                blobColor="#FF7B7B"
+                textColor="#FF7B7B"
+                hoverTextColor="#FFFFFF"
+              >
+                <span>Initialize</span>
+                <motion.svg
+                  className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M14 5l7 7m0 0l-7 7m7-7H3"
+                  />
+                </motion.svg>
+              </BlobButton>
+            </div>
+          )}
         </div>
       </motion.nav>
     </div>

@@ -8,7 +8,15 @@ interface BlobButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> 
   textColor?: string;
   hoverTextColor?: string;
   backgroundColor?: string;
+  size?: "sm" | "md" | "lg" | "icon";
 }
+
+const sizeClasses = {
+  sm: "px-[16px] py-[8px] text-[13px]",
+  md: "px-[24px] py-[12px] text-[14px]",
+  lg: "px-[36px] py-[16px] text-[15px]",
+  icon: "w-10 h-10 p-0 text-[14px] flex items-center justify-center shrink-0",
+};
 
 export const BlobButton = ({
   children,
@@ -17,12 +25,13 @@ export const BlobButton = ({
   textColor = "#FF9494",
   hoverTextColor = "#FFFFFF",
   backgroundColor = "transparent",
+  size = "lg",
   ...props
 }: BlobButtonProps) => {
   return (
     <>
       <button
-        className={`relative z-[1] px-[36px] py-[16px] text-center font-bold text-[15px] bg-transparent outline-none border-none transition-colors duration-500 cursor-pointer rounded-[30px] group ${className}`}
+        className={`relative z-[1] ${sizeClasses[size]} text-center font-bold bg-transparent outline-none border-none transition-colors duration-500 cursor-pointer rounded-[30px] group ${className}`}
         style={
           {
             "--text-color": textColor,

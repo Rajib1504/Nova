@@ -16,11 +16,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Nova AI - Email and Calendar Reimagined",
-  description: "An AI-powered Gmail + Google Calendar workspace with an agent chat interface.",
+  description:
+    "An AI-powered Gmail + Google Calendar workspace with an agent chat interface.",
   icons: {
     icon: "/logo.svg",
   },
 };
+
+import { AuthProviders } from "@/components/AuthProviders";
 
 export default function RootLayout({
   children,
@@ -31,11 +34,14 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col relative overflow-x-hidden">
-        <AnimatedBackground />
-        <CustomCursor />
-        {children}
+      <body className="min-h-full flex flex-col relative overflow-x-hidden" suppressHydrationWarning>
+        <AuthProviders>
+          <AnimatedBackground />
+          <CustomCursor />
+          {children}
+        </AuthProviders>
       </body>
     </html>
   );

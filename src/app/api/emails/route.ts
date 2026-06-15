@@ -1,0 +1,32 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]/route";
+import { db } from "../../../db";
+import { emails } from "../../../db/schema";
+import { eq, desc } from "drizzle-orm";
+
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = session.user.id;
+    console.log(`\n📧 Fetching database emails for user: ${tenantId}`);
+
+    // Fetch emails from the database, ordered by newest first
+    const userEmails = await db.query.emails.findMany({
+      where: eq(emails.userId, tenantId),
+      orderBy: [desc(emails.date)],
+      limit: 50,
+    });
+
+    return NextResponse.json({ emails: userEmails });
+
+  } catch (error) {
+    console.error("Emails fetch error:", error);
+    return NextResponse.json({ error: String(error) }, { status: 500 });
+  }
+}

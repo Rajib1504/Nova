@@ -235,7 +235,9 @@ export const Hero = () => {
                         <Image
                           src="https://i.ibb.co/FJgrGVk/wor.jpg"
                           alt="Avatar"
-                          layout="fill"
+                          fill
+                          sizes="40px"
+                          style={{ objectFit: "cover" }}
                         />
                       </div>
                       <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
@@ -291,7 +293,9 @@ export const Hero = () => {
                         <Image
                           src="https://i.ibb.co/3fGkDSH/ey-Jid-WNr-ZXQi-Oi-Jjb250-ZW50-Lmhzd3-N0-YXRp-Yy5jb20i-LCJr-ZXki-Oi-Jna-WZc-L3-Bs-YXlc-Lz-Bi-N2-Y0-Z.webp"
                           alt="Avatar"
-                          layout="fill"
+                          fill
+                          sizes="40px"
+                          style={{ objectFit: "cover" }}
                         />
                       </div>
                       <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">
@@ -352,7 +356,9 @@ export const Hero = () => {
                     <Image
                       src="https://i.ibb.co/VxDJ7kt/profile-photo-1.jpg"
                       alt="Alex"
-                      layout="fill"
+                      fill
+                      sizes="40px"
+                      style={{ objectFit: "cover" }}
                     />
                   </div>
                   <div className="bg-[#FF9494] text-white rounded-2xl rounded-tr-none p-4 shadow-md text-[13px] leading-relaxed">

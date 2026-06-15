@@ -2,8 +2,8 @@ import OpenAI from "openai";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
 import { db } from "../db";
-import { emails } from "../db/schema";
-
+import { emails, users } from "../db/schema";
+import { eq } from "drizzle-orm";
 // Initialize OpenAI using the key from .env
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -21,7 +21,9 @@ export async function processAndStoreEmail(
   fromAddress: string,
   toAddress: string,
   subject: string,
-  bodyText: string
+  bodyText: string,
+  dateStr?: string,
+  labels?: string[]
 ) {
   try {
     console.log(`[AI Triage] Starting triage for email: ${subject}`);
@@ -56,14 +58,15 @@ export async function processAndStoreEmail(
     console.log(`[AI Triage] Vector embedding generated!`);
 
     // 3. Store the enriched email in Postgres using Drizzle
-    
-    // First, ensure the User exists in the database to satisfy the Foreign Key constraint!
-    const { users } = await import("../db/schema");
-    await db.insert(users).values({
-      id: tenantId,
-      email: `${tenantId}@nova.dev`, // Placeholder email to satisfy the unique constraint
-      name: tenantId,
-    }).onConflictDoNothing();
+
+    // Ensure the User exists before proceeding
+    const userExists = await db.query.users.findFirst({
+      where: eq(users.id, tenantId),
+    });
+
+    if (!userExists) {
+      throw new Error(`CRITICAL: Attempted to triage email for unknown user: ${tenantId}`);
+    }
 
     await db.insert(emails).values({
       id: messageId,
@@ -76,13 +79,15 @@ export async function processAndStoreEmail(
       body: bodyText,
       priority: triageResult?.priority || "Other",
       embedding: embedding,
-      date: new Date(),
+      date: dateStr ? new Date(dateStr) : new Date(),
+      labels: labels || [],
     }).onConflictDoUpdate({
       target: emails.id,
       set: {
         priority: triageResult?.priority,
         snippet: triageResult?.summary,
         embedding: embedding,
+        labels: labels || [],
       }
     });
 

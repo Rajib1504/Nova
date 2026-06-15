@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
 
     ],
   },
+  allowedDevOrigins: [
+    "pretext-mating-mounting.ngrok-free.dev"
+  ],
 };
 
 export default nextConfig;

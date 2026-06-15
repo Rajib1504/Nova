@@ -115,6 +115,7 @@ export const AgentChatPanel = () => {
                       alt="Nova"
                       width={100}
                       height={100}
+                      style={{ width: "auto", height: "auto" }}
                       className="w-full h-full object-cover"
                     />
                   </div>

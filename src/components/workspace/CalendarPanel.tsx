@@ -118,6 +118,26 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
           /* Expanded State: Full Calendar */
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             
+            {/* Offline Connection Prompt */}
+            <div className="mx-4 mt-4 mb-2 p-4 glass bg-white/80 dark:bg-[#23232A]/90 border border-[#FF9494]/40 shadow-[0_4px_20px_rgba(255,148,148,0.1)] rounded-2xl shrink-0 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 relative overflow-hidden z-20">
+              <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#FF9494]" />
+              <div>
+                <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  Neural Core Offline
+                </h3>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  Connect your Google Calendar to initialize autonomous scheduling.
+                </p>
+              </div>
+              <a 
+                href="/api/connect?plugin=google-calendar" 
+                className="px-4 py-2 bg-gradient-to-r from-[#FF7B7B] to-[#FF9494] text-white text-sm font-bold rounded-xl shadow-md hover:shadow-[0_8px_15px_rgba(255,148,148,0.3)] hover:-translate-y-0.5 transition-all whitespace-nowrap shrink-0"
+              >
+                Connect Calendar
+              </a>
+            </div>
+
             {/* Days Header */}
             <div className="flex border-b border-white/20 dark:border-white/5 shrink-0 pl-14">
               {DAYS.map((day, i) => (
