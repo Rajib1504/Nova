@@ -1,17 +1,15 @@
-import OpenAI from "openai";
-import { z } from "zod";
-import { zodResponseFormat } from "openai/helpers/zod";
+
 import { db } from "../db";
 import { calendarEvents, users } from "../db/schema";
 import { eq } from "drizzle-orm";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+
+
+import { GoogleCalendarEvent } from "@/types/models";
 
 export async function processAndStoreCalendarEvents(
   tenantId: string,
-  events: any[]
+  events: GoogleCalendarEvent[]
 ) {
   try {
     console.log(`[Calendar Sync] Starting sync for ${events.length} events...`);

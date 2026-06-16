@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
-import { Hexagon, Search, Bell, Sun, Moon } from "lucide-react";
-import { motion } from "framer-motion";
+import { Search, Bell, Sun, Moon } from "lucide-react";
+import Image from "next/image";
 
 export const TopHeader = ({ theme, toggleTheme }: { theme: string, toggleTheme: () => void }) => {
   return (
@@ -9,7 +9,7 @@ export const TopHeader = ({ theme, toggleTheme }: { theme: string, toggleTheme: 
       
       {/* Brand */}
       <div className="flex items-center gap-3 w-1/4">
-        <img src="/logo.svg" alt="logo" className="w-10 h-10" />
+        <Image src="/logo.svg" alt="logo" width={40} height={40} className="w-10 h-10" />
         <span className="text-2xl font-black font-heading tracking-tighter text-[#2D2A26] dark:text-[#F0EEEC]">
           NOVA
         </span>
@@ -67,7 +67,7 @@ export const TopHeader = ({ theme, toggleTheme }: { theme: string, toggleTheme: 
                         shadow-[4px_4px_8px_#E5DCD0,-4px_-4px_8px_#FFFFFF] 
                         dark:shadow-[4px_4px_8px_#121418,-4px_-4px_8px_#22262e]">
           <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FFE3E1] to-[#FF9494] overflow-hidden border-2 border-[#FFF5E4] dark:border-[#1A1D23]">
-             <img src="https://i.pravatar.cc/150?img=11" alt="Alex Rivera" className="w-full h-full object-cover" />
+             <Image src="https://i.pravatar.cc/150?img=11" alt="Alex Rivera" width={40} height={40} className="w-full h-full object-cover" />
           </div>
           <span className="font-semibold text-sm pr-4 text-[#2D2A26] dark:text-[#F0EEEC]">
             Alex Rivera

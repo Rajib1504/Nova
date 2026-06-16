@@ -8,6 +8,8 @@ import {
 import { format, startOfWeek, addDays, isSameDay, parseISO, getHours, getMinutes, addMinutes } from "date-fns";
 import axios from "axios";
 import { BlobButton } from "../BlobButton";
+import { CalendarEvent } from "@/types/models";
+import { ErrorToast } from "@/components/ui/ErrorToast";
 
 interface CalendarPanelProps {
   isCollapsed: boolean;
@@ -21,8 +23,9 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
   const [editingMeetingId, setEditingMeetingId] = useState<string | null>(null);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [errorToast, setErrorToast] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   
   const [baseDate, setBaseDate] = useState(new Date());
@@ -77,6 +80,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchEvents();
   }, []);
 
@@ -88,19 +92,28 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
     window.location.href = "/api/connect?plugin=googlecalendar";
   };
 
+  const showError = (msg: string) => {
+    setErrorToast(msg);
+    setTimeout(() => setErrorToast(null), 4000);
+  };
+
   const handleCreateEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (new Date(formData.endTime) <= new Date(formData.startTime)) {
-      alert("End time must be after the start time.");
+      showError("End time must be after the start time.");
       return;
     }
 
     setIsSubmitting(true);
     try {
+      const startIso = new Date(formData.startTime).toISOString();
+      const endIso = new Date(formData.endTime).toISOString();
       await axios.post("/api/calendar/modify", {
         action: "create",
-        ...formData
+        ...formData,
+        startTime: startIso,
+        endTime: endIso
       });
       setIsCreatingEvent(false);
       fetchEvents();
@@ -115,16 +128,20 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
     e.preventDefault();
 
     if (new Date(formData.endTime) <= new Date(formData.startTime)) {
-      alert("End time must be after the start time.");
+      showError("End time must be after the start time.");
       return;
     }
 
     setIsSubmitting(true);
     try {
+      const startIso = new Date(formData.startTime).toISOString();
+      const endIso = new Date(formData.endTime).toISOString();
       await axios.post("/api/calendar/modify", {
         action: "update",
         id,
-        ...formData
+        ...formData,
+        startTime: startIso,
+        endTime: endIso
       });
       setEditingMeetingId(null);
       fetchEvents();
@@ -145,7 +162,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
     }
   };
 
-  const timelineEvents = events.map(e => {
+  const timelineEvents = events.map((e: CalendarEvent) => {
     if (!e.startTime || !e.endTime) return null;
     const startD = parseISO(e.startTime);
     const endD = parseISO(e.endTime);
@@ -158,13 +175,18 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
     
     if (startHour > 24 || endHour < 0) return null;
 
+    let durationHours = (endD.getTime() - startD.getTime()) / (1000 * 60 * 60);
+    if (durationHours < 0) {
+      durationHours += 24; // Crosses midnight
+    }
+
     return {
       ...e,
       dayIndex,
       startHour,
-      durationHours: endHour - startHour,
+      durationHours,
     };
-  }).filter(Boolean);
+  }).filter(Boolean) as (CalendarEvent & { dayIndex: number; startHour: number; durationHours: number })[];
 
   const formatEventDate = (start: string, end: string) => {
     const s = parseISO(start);
@@ -261,7 +283,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
             </button>
             <div className="w-full border-t border-white/20 dark:border-white/5 my-1" />
             <div className="flex flex-col gap-2 w-full px-2">
-              {timelineEvents.map((m: any) => (
+              {timelineEvents.map((m) => (
                 <div 
                   key={m.id} 
                   onClick={() => {
@@ -338,7 +360,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
                         <div className="h-[1px] w-full bg-[#FF9494] shadow-[0_0_5px_rgba(255,148,148,0.5)]" suppressHydrationWarning />
                       </div>
 
-                      {timelineEvents.map((meeting: any) => {
+                      {timelineEvents.map((meeting) => {
                         const topPos = meeting.startHour * ROW_HEIGHT;
                         const isShortEvent = meeting.durationHours <= 0.5;
                         const heightPos = isShortEvent ? 24 : meeting.durationHours * ROW_HEIGHT;
@@ -608,6 +630,9 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({ isCollapsed, onTog
           </div>
         )}
       </div>
+
+      {/* Floating Error Toast */}
+      <ErrorToast message={errorToast} onClose={() => setErrorToast(null)} />
     </div>
   );
 };

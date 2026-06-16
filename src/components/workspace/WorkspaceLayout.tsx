@@ -12,9 +12,7 @@ export const WorkspaceLayout = () => {
 
   useEffect(() => {
     // Default to dark mode for workspace based on modern app trends, or check system
-    if (document.documentElement.classList.contains("dark")) {
-      setTheme("dark");
-    } else {
+    if (!document.documentElement.classList.contains("dark")) {
       document.documentElement.classList.add("dark");
     }
   }, []);

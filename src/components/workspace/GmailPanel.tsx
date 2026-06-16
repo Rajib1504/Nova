@@ -5,6 +5,7 @@ import { api } from "@/lib/axios";
 import { GmailSidebar, SIDEBAR_ITEMS } from "./gmail/GmailSidebar";
 import { GmailContent } from "./gmail/GmailContent";
 import { GmailCompose } from "./gmail/GmailCompose";
+import { EmailMessage } from "@/types/models";
 
 interface GmailPanelProps {
   isCollapsed: boolean;
@@ -15,7 +16,7 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
   isCollapsed,
   onToggleCollapse,
 }) => {
-  const [emails, setEmails] = useState<any[]>([]);
+  const [emails, setEmails] = useState<EmailMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -71,6 +72,7 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
   };
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchEmails();
 
     // Auto-refresh every 30 seconds to catch newly processed webhook emails without spamming logs

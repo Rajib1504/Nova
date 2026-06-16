@@ -1,14 +1,15 @@
 "use client";
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Clock, Inbox, ChevronDown, ChevronUp } from "lucide-react";
+import { motion } from "framer-motion";
+import { Clock, Inbox } from "lucide-react";
 import { TabsContent } from "@/components/ui/tabs";
 
 import { GmailThreadView } from "./GmailThreadView";
+import { EmailMessage, EmailThread } from "@/types/models";
 
 interface GmailContentProps {
   label: string;
-  filteredEmails: any[];
+  filteredEmails: EmailMessage[];
   loading: boolean;
   syncing: boolean;
   onSync: () => void;
@@ -43,7 +44,7 @@ const getAvatarText = (fromStr: string) => {
 import { BlobButton } from "../../BlobButton";
 
 export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmails, loading, syncing, onSync, isConnected, onReply, onRefresh }) => {
-  const [viewingThread, setViewingThread] = useState<any | null>(null);
+  const [viewingThread, setViewingThread] = useState<EmailThread | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
   const handleConnectClick = () => {
@@ -52,7 +53,7 @@ export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmail
   };
 
   // Group emails into threads
-  const threadsMap = new Map<string, any[]>();
+  const threadsMap = new Map<string, EmailMessage[]>();
   filteredEmails.forEach(email => {
     const tId = email.threadId || email.id;
     if (!threadsMap.has(tId)) {

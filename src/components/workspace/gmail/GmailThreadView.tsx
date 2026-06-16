@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  X,
   ArrowLeft,
   Trash2,
   Archive,
   Mail,
   Reply,
-  MoreVertical,
 } from "lucide-react";
 import { BlobButton } from "../../BlobButton";
 import { api } from "@/lib/axios";
+import { EmailMessage, EmailThread } from "@/types/models";
 
 interface GmailThreadViewProps {
-  thread: any;
+  thread: EmailThread;
   onClose: () => void;
   onReply: (to: string, subject: string) => void;
   onUpdateThread: () => void;
@@ -26,15 +25,15 @@ export const GmailThreadView: React.FC<GmailThreadViewProps> = ({
   onUpdateThread,
 }) => {
   const [isProcessing, setIsProcessing] = useState(false);
-  const [emails, setEmails] = useState<any[]>(thread.emails || []);
-  const [isLoadingBody, setIsLoadingBody] = useState(true);
+  const [emails, setEmails] = useState<EmailMessage[]>(thread.emails || []);
+
 
   useEffect(() => {
     const fetchFullEmails = async () => {
-      setIsLoadingBody(true);
+
       try {
         const fullEmails = await Promise.all(
-          (thread.emails || []).map(async (email: any) => {
+          (thread.emails || []).map(async (email: EmailMessage) => {
             if (email.body) return email; // Already have body
             try {
               const res = await api.get(`/api/emails/${email.id}`);
@@ -48,8 +47,7 @@ export const GmailThreadView: React.FC<GmailThreadViewProps> = ({
         setEmails(fullEmails);
       } catch (err) {
         console.error("Failed to fetch full thread bodies", err);
-      } finally {
-        setIsLoadingBody(false);
+
       }
     };
     fetchFullEmails();
@@ -147,7 +145,7 @@ export const GmailThreadView: React.FC<GmailThreadViewProps> = ({
             </h1>
 
             <div className="flex flex-col gap-10">
-              {emails.map((email: any, idx: number) => (
+              {emails.map((email: EmailMessage, idx: number) => (
                 <div key={idx} className="flex flex-col">
                   <div className="flex justify-between items-start mb-6 border-b border-gray-200 dark:border-white/10 pb-4">
                     <div>

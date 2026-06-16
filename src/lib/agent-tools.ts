@@ -2,7 +2,7 @@ import { z } from "zod";
 import { tool } from "@openai/agents";
 import { db } from "../db";
 import { emails } from "../db/schema";
-import { headers } from "next/headers";
+
 
 export const createStoreEmailTool = (tenantId: string) => tool({
   name: "store_email",
