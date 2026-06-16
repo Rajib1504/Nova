@@ -11,7 +11,10 @@ interface GmailPanelProps {
   onToggleCollapse: () => void;
 }
 
-export const GmailPanel: React.FC<GmailPanelProps> = ({ isCollapsed, onToggleCollapse }) => {
+export const GmailPanel: React.FC<GmailPanelProps> = ({
+  isCollapsed,
+  onToggleCollapse,
+}) => {
   const [emails, setEmails] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -42,9 +45,9 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({ isCollapsed, onToggleCol
         if (res.data.emails.length > 0) {
           setIsConnected(true);
         } else {
-          // You might want a dedicated status endpoint, but for now we assume 
+          // You might want a dedicated status endpoint, but for now we assume
           // 0 emails means they haven't connected or synced.
-          setIsConnected(false); 
+          setIsConnected(false);
         }
       }
     } catch (err) {
@@ -69,28 +72,46 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({ isCollapsed, onToggleCol
 
   useEffect(() => {
     fetchEmails();
-    
-    // Auto-refresh every 15 seconds to catch newly processed webhook emails
-    const interval = setInterval(fetchEmails, 15000);
+
+    // Auto-refresh every 30 seconds to catch newly processed webhook emails without spamming logs
+    const interval = setInterval(fetchEmails, 30000);
     return () => clearInterval(interval);
   }, []);
 
   const getFilteredEmails = (label: string) => {
-    switch(label) {
+    switch (label) {
       case "Inbox":
-        return emails.filter(e => e.labels?.includes('INBOX') || (!e.labels?.includes('SENT') && !e.labels?.includes('DRAFT') && !e.labels?.includes('TRASH')));
+        return emails.filter(
+          (e) =>
+            e.labels?.includes("INBOX") ||
+            (!e.labels?.includes("SENT") &&
+              !e.labels?.includes("DRAFT") &&
+              !e.labels?.includes("TRASH")),
+        );
       case "Sent":
-        return emails.filter(e => e.labels?.includes('SENT'));
+        return emails.filter((e) => e.labels?.includes("SENT"));
       case "Drafts":
-        return emails.filter(e => e.labels?.includes('DRAFT'));
+        return emails.filter((e) => e.labels?.includes("DRAFT"));
       case "Important":
-        return emails.filter(e => e.labels?.includes('IMPORTANT') || e.priority === 'Important' || e.priority === 'high' || e.priority === 'urgent');
+        return emails.filter(
+          (e) =>
+            e.labels?.includes("IMPORTANT") ||
+            e.priority === "Important" ||
+            e.priority === "high" ||
+            e.priority === "urgent",
+        );
       case "Bin":
-        return emails.filter(e => e.labels?.includes('TRASH'));
+        return emails.filter((e) => e.labels?.includes("TRASH"));
       case "Archive":
-        return emails.filter(e => !e.labels?.includes('INBOX') && !e.labels?.includes('TRASH') && !e.labels?.includes('DRAFT') && !e.labels?.includes('SENT'));
+        return emails.filter(
+          (e) =>
+            !e.labels?.includes("INBOX") &&
+            !e.labels?.includes("TRASH") &&
+            !e.labels?.includes("DRAFT") &&
+            !e.labels?.includes("SENT"),
+        );
       default:
-        return emails.filter(e => e.labels?.includes(label.toUpperCase()));
+        return emails.filter((e) => e.labels?.includes(label.toUpperCase()));
     }
   };
 
@@ -103,9 +124,9 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({ isCollapsed, onToggleCol
       {/* We completely removed the top header. The toggle button is now inside the Sidebar. */}
 
       <Tabs defaultValue="Inbox" className="flex-1 flex overflow-hidden">
-        <GmailSidebar 
-          isCollapsed={isCollapsed} 
-          onToggleCollapse={onToggleCollapse} 
+        <GmailSidebar
+          isCollapsed={isCollapsed}
+          onToggleCollapse={onToggleCollapse}
           getFilteredCount={getFilteredCount}
           onCompose={handleCompose}
         />
@@ -113,7 +134,7 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({ isCollapsed, onToggleCol
         {/* ALWAYS render content so it doesn't vanish when sidebar shrinks to icons */}
         <>
           {SIDEBAR_ITEMS.map((item) => (
-            <GmailContent 
+            <GmailContent
               key={item.label}
               label={item.label}
               filteredEmails={getFilteredEmails(item.label)}
@@ -130,8 +151,8 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({ isCollapsed, onToggleCol
 
       {/* Floating Compose Window */}
       {isComposing && (
-        <GmailCompose 
-          onClose={() => setIsComposing(false)} 
+        <GmailCompose
+          onClose={() => setIsComposing(false)}
           initialTo={replyTo}
           initialSubject={replySubject}
         />

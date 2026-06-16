@@ -40,8 +40,16 @@ const getAvatarText = (fromStr: string) => {
   return fromStr.substring(0, 2).toUpperCase();
 };
 
+import { BlobButton } from "../../BlobButton";
+
 export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmails, loading, syncing, onSync, isConnected, onReply, onRefresh }) => {
   const [viewingThread, setViewingThread] = useState<any | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const handleConnectClick = () => {
+    setIsConnecting(true);
+    window.location.href = "/api/connect?plugin=gmail";
+  };
 
   // Group emails into threads
   const threadsMap = new Map<string, any[]>();
@@ -85,12 +93,13 @@ export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmail
           <p className="text-gray-500 dark:text-gray-400 max-w-sm mb-8">
             Initialize your neural core to automatically triage, categorize, and organize your inbox.
           </p>
-          <a 
-            href="/api/connect?plugin=gmail"
-            className="px-6 py-3 bg-gradient-to-r from-[#FF7B7B] to-[#FF9494] text-white font-bold rounded-xl shadow-md hover:shadow-[0_8px_15px_rgba(255,148,148,0.3)] hover:-translate-y-0.5 transition-all text-lg"
+          <BlobButton 
+            onClick={handleConnectClick} 
+            disabled={isConnecting}
+            className="w-[250px]"
           >
-            Connect to Gmail
-          </a>
+            {isConnecting ? "Establishing Quantum Link..." : "Connect Gmail"}
+          </BlobButton>
         </div>
       ) : (
         <div className="flex-1 flex flex-col gap-3 min-h-[300px]">
@@ -132,7 +141,7 @@ export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmail
                           </span>
                         )}
                       </div>
-                      <span className={`text-xs whitespace-nowrap shrink-0 ml-2 flex items-center gap-1.5 ${isUnread ? 'font-bold text-[#FF9494]' : 'text-gray-500 dark:text-gray-400'}`}>
+                      <span suppressHydrationWarning className={`text-xs whitespace-nowrap shrink-0 ml-2 flex items-center gap-1.5 ${isUnread ? 'font-bold text-[#FF9494]' : 'text-gray-500 dark:text-gray-400'}`}>
                         {formatTime(thread.emails[0].date)}
                       </span>
                     </div>

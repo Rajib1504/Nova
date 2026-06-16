@@ -21,6 +21,18 @@ export async function GET(req: NextRequest) {
       where: eq(emails.userId, tenantId),
       orderBy: [desc(emails.date)],
       limit: 50,
+      columns: {
+        id: true,
+        threadId: true,
+        subject: true,
+        fromAddress: true,
+        snippet: true,
+        date: true,
+        isRead: true,
+        priority: true,
+        labels: true, // needed for inbox/archive tabs
+        // CRITICAL: Exclude body and embedding to prevent massive egress
+      }
     });
 
     return NextResponse.json({ emails: userEmails });

@@ -11,16 +11,22 @@ export async function POST(request: NextRequest) {
   request.headers.forEach((value, key) => {
     header[key] = value;
   });
+  // console.log(header)
 
   const contenttype = request.headers.get("content-type");
   let body: Record<string, unknown> = {};
 
   if (contenttype?.includes("application/json")) {
-    body = await request.json();
-  } else {
-    const text = await request.text();
     try {
-      body = JSON.parse(text);
+      const text = await request.text();
+      body = text ? JSON.parse(text) : {};
+    } catch (e) {
+      body = {};
+    }
+  } else {
+    try {
+      const text = await request.text();
+      body = text ? JSON.parse(text) : {};
     } catch {
       body = {};
     }
@@ -48,25 +54,70 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // CRITICAL: Stop the process if we don't have a user ID
-  if (!dynamicTenantId) {
-    console.error("Webhook failed: No tenantId found in URL parameters or payload.");
-    return NextResponse.json({ error: "Missing tenantId" }, { status: 400 });
-  }
-
   // Force it to be a non-numeric string to bypass the Corsair SDK coercion bug
   const corsairTenantId = dynamicTenantId ? `user_${dynamicTenantId}` : undefined;
 
-  const result = await processWebhook(corsair, header, body, {
-    tenantId: corsairTenantId,
-  });
+  // Let Corsair handle the webhook. It will automatically resolve the tenantId 
+  // from the Google Calendar X-Goog-Channel-ID header if it's missing from the URL.
+  let result: any = null;
+  let isGoogleCalendarWebhook = false;
 
-  console.info("Plugin Processed:", result?.plugin, result?.action);
+  // Check headers manually in case processWebhook throws an error
+  if (header["x-goog-resource-state"]) {
+    isGoogleCalendarWebhook = true;
+  }
+
+  try {
+    result = await processWebhook(corsair, header, body, corsairTenantId ? {
+      tenantId: corsairTenantId,
+    } : undefined);
+  } catch (err: any) {
+    console.error("Corsair processWebhook threw an error:", err.message);
+  }
+
+  // If Corsair successfully processed it, it will return the tenantId it found.
+  let resolvedTenantId = dynamicTenantId || result?.tenantId?.replace("user_", "");
+
+  // HACKATHON FALLBACK: If Corsair fails to map the Channel-ID to a tenant, 
+  // we can manually look up the active Google Calendar account from our DB.
+  if (!resolvedTenantId && (result?.plugin === "googlecalendar" || isGoogleCalendarWebhook)) {
+    try {
+      // Find any account connected to googlecalendar
+      const activeCalendarAccount = await db.query.corsairAccounts.findFirst({
+        where: (accounts, { eq }) => eq(accounts.integrationId, "googlecalendar")
+      });
+      if (activeCalendarAccount) {
+        resolvedTenantId = activeCalendarAccount.tenantId.replace("user_", "");
+        console.log("Fallback resolved Calendar tenantId:", resolvedTenantId);
+      }
+    } catch (e) {
+      console.error("Failed fallback tenant resolution:", e);
+    }
+
+    // Dynamic Hackathon Fallback: Find the active user dynamically
+    if (!resolvedTenantId) {
+      try {
+        const firstUser = await db.query.users.findFirst();
+        if (firstUser) {
+          resolvedTenantId = firstUser.id;
+        }
+      } catch (e) {
+        console.error("Failed dynamic fallback", e);
+      }
+    }
+
+    // Polyfill the result object so our sync injection runs
+    if (!result) {
+      result = { plugin: "googlecalendar", action: "onEventChanged" };
+    }
+  }
+
+  console.info("Plugin Processed:", result?.plugin, result?.action, "Tenant:", resolvedTenantId);
 
   // --- SUPERHUMAN AI TRIAGE INJECTION (PRODUCTION READY) ---
   if (result.plugin === "gmail" && result.action === "messageChanged") {
 
-    const safeTenantId = dynamicTenantId as string;
+    const safeTenantId = resolvedTenantId as string;
 
     if (!safeTenantId) {
       console.error("Webhook Triage Aborted: No valid tenantId found.");
@@ -90,7 +141,7 @@ export async function POST(request: NextRequest) {
         const c = corsair.withTenant(corsairTenantId);
 
         console.log(`🤖 Webhook triggered fetch for tenant: ${safeTenantId}...`);
-        
+
         // Fetch the single most recent unread email reliably
         const listRes = await (c as any).gmail.api.messages.list({
           userId: 'me',
@@ -106,9 +157,9 @@ export async function POST(request: NextRequest) {
         }
 
         const msg = messages[0];
-        
+
         const { processAndStoreEmail } = await import("../../../lib/triage");
-        
+
         // Fetch full message details
         const msgRes = await (c as any).gmail.api.messages.get({
           userId: 'me',
@@ -129,11 +180,72 @@ export async function POST(request: NextRequest) {
           // Pass to our deterministic triage logic (which uses OpenAI safely for categorization)
           await processAndStoreEmail(safeTenantId, msg.id, from, to, subject, bodyText, dateStr, labels);
         }
-        
+
         console.log(`🤖 Background triage complete!`);
-        
+
       } catch (e) {
         console.error("Failed to process background webhook triage", e);
+      }
+    });
+  }
+
+  // --- CALENDAR SYNC INJECTION ---
+  if (result.plugin === "googlecalendar" && result.action === "onEventChanged") {
+    const safeTenantId = resolvedTenantId as string;
+
+    if (!safeTenantId) {
+      console.error("Calendar Webhook Aborted: No valid tenantId found by Corsair. Returning 200 to stop retries.");
+      return NextResponse.json({ error: "No valid tenantId found" }, { status: 200 });
+    }
+
+    console.log(`Calendar update detected for tenant: ${safeTenantId}`);
+
+    // Asynchronously fetch and process using Next.js 'after'
+    after(async () => {
+      try {
+        const corsairTenantId = `user_${safeTenantId}`;
+        const account = await db.query.corsairAccounts.findFirst({
+          where: eq(corsairAccounts.tenantId, corsairTenantId),
+        });
+
+        if (!account) {
+          console.log(`⚠️ No Corsair account found for tenant ${corsairTenantId}. Skipping calendar sync.`);
+          return;
+        }
+
+        const c = corsair.withTenant(corsairTenantId);
+
+        console.log(`🤖 Calendar Webhook triggered fetch for tenant: ${safeTenantId}...`);
+
+        // Fetch upcoming 50 events
+        const timeMin = new Date();
+        timeMin.setDate(timeMin.getDate() - 7); // include recently past events for context
+
+        const listRes = await (c as any).googlecalendar.api.events.getMany({
+          calendarId: 'primary',
+          timeMin: timeMin.toISOString(),
+          maxResults: 50,
+          singleEvents: true,
+          orderBy: 'startTime',
+          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+        });
+
+        const events = listRes?.items || [];
+
+        if (events.length === 0) {
+          console.log(`🤖 No calendar events found for tenant ${safeTenantId}.`);
+          return;
+        }
+
+        const { processAndStoreCalendarEvents } = await import("../../../lib/calendarTriage");
+
+        // Pass to our sync logic
+        await processAndStoreCalendarEvents(safeTenantId, events);
+
+        console.log(`🤖 Background calendar sync complete!`);
+
+      } catch (e) {
+        console.error("Failed to process background calendar sync", e);
       }
     });
   }

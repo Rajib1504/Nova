@@ -29,26 +29,30 @@ export async function GET(request: NextRequest) {
     console.log("Processing Callback. State provided:", state);
     const result = await processOAuthCallback(corsair, { code, state, redirectUri: REDIRECT_URI });
     
-    // Auto-sync if Gmail connected
-    if (result.plugin === "gmail") {
+    // Auto-sync if Gmail or Calendar connected
+    if (result.plugin === "gmail" || result.plugin === "googlecalendar") {
       const session = await getServerSession(authOptions);
       if (session?.user?.id) {
         const tenantId = session.user.id;
         const cookieHeader = request.headers.get("cookie");
+        const syncUrl = result.plugin === "gmail" 
+          ? `${process.env.APP_URL}/api/emails/sync`
+          : `${process.env.APP_URL}/api/calendar/sync`;
+
         // Trigger the background sync without blocking
         after(async () => {
           try {
-            console.log(`[Callback] Triggering initial Gmail sync for ${tenantId}`);
-            await fetch(`${process.env.APP_URL}/api/emails/sync`, {
+            console.log(`[Callback] Triggering initial sync for ${result.plugin} (Tenant: ${tenantId})`);
+            await fetch(syncUrl, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
                 ...(cookieHeader ? { "Cookie": cookieHeader } : {})
               },
-              body: JSON.stringify({ offset: 0 })
+              ...(result.plugin === "gmail" ? { body: JSON.stringify({ offset: 0 }) } : {})
             });
           } catch (err) {
-            console.error("Failed to trigger initial sync:", err);
+            console.error(`Failed to trigger initial sync for ${result.plugin}:`, err);
           }
         });
       }
