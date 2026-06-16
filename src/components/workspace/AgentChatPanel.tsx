@@ -3,6 +3,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mic, Send, Hexagon } from "lucide-react";
 import Image from "next/image";
+import axios from "axios";
+import { useSession } from "next-auth/react";
 
 interface Message {
   id: string;
@@ -14,17 +16,7 @@ const INITIAL_MESSAGES: Message[] = [
   {
     id: "1",
     sender: "ai",
-    text: "Hello Alex! I've triaged your inbox. You have **3 high-priority emails** from Sarah regarding the Q4 report. Would you like me to draft a summary of the key action items for you?",
-  },
-  {
-    id: "2",
-    sender: "user",
-    text: "Yes, please. Also, check my calendar for tomorrow and see if I have a 30-minute window for a quick sync with her.",
-  },
-  {
-    id: "3",
-    sender: "ai",
-    text: 'I\'ve analyzed your schedule. Tomorrow at **2:30 PM**, you have a gap between the "Product Sync" and the "Global Review". I can pencil that in and send Sarah a calendar invite. Shall I proceed?',
+    text: "Greetings. I am **NOVA**—your Personal Workflow Automator. I am engineered to seamlessly orchestrate your digital communications and schedule. From drafting targeted emails to coordinating complex calendar logistics, simply articulate your objective, and I will handle the execution.",
   },
 ];
 
@@ -34,6 +26,9 @@ export const AgentChatPanel = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { data: session } = useSession();
+  const tenantId = session?.user?.id;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -43,31 +38,50 @@ export const AgentChatPanel = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const handleSend = () => {
-    if (!inputValue.trim()) return;
+  const handleSend = async () => {
+    if (!inputValue.trim() || !tenantId) return;
 
+    const userText = inputValue;
     const newUserMessage: Message = {
       id: Date.now().toString(),
       sender: "user",
-      text: inputValue,
+      text: userText,
     };
 
     setMessages((prev) => [...prev, newUserMessage]);
     setInputValue("");
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      setIsTyping(false);
+    try {
+      const response = await axios.post("/api/agent", {
+        prompt: userText,
+        tenantId,
+      });
+
+      const aiText = response.data.message || "Action completed.";
+      
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           sender: "ai",
-          text: "Action confirmed. I am executing the protocol now.",
+          text: aiText,
         },
       ]);
-    }, 2000);
+    } catch (error: any) {
+      console.error("Agent execution error:", error);
+      const errorMessage = error.response?.data?.error || "I encountered an error while trying to process your request. Please try again.";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: "ai",
+          text: `**System Alert:** ${errorMessage}`,
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
