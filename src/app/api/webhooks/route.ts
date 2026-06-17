@@ -114,6 +114,10 @@ export async function POST(request: NextRequest) {
 
   console.info("Plugin Processed:", result?.plugin, result?.action, "Tenant:", resolvedTenantId);
 
+  if (!result) {
+    return NextResponse.json({ success: true, message: "Ignored webhook or no matching handler" }, { status: 200 });
+  }
+
   // --- SUPERHUMAN AI TRIAGE INJECTION (PRODUCTION READY) ---
   if (result.plugin === "gmail" && result.action === "messageChanged") {
 

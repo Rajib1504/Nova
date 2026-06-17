@@ -130,39 +130,13 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
     }
   }, []);
 
-  const MAX_POLL_ATTEMPTS = 5;
-
   useEffect(() => {
     let isMounted = true;
-    let timeoutId: NodeJS.Timeout;
-    let pollAttempts = 0;
 
-    const poll = async () => {
-      if (!isMounted || pollAttempts >= MAX_POLL_ATTEMPTS) return;
-      pollAttempts++;
-      const data = await fetchEvents(true);
-
-      const currentlyConnected = data?.isConnected ?? false;
-      const currentEventsCount = data?.events?.length ?? 0;
-
-      // Keep polling only if connected but still empty, and under the attempt cap
-      if (currentlyConnected && currentEventsCount === 0 && isMounted && pollAttempts < MAX_POLL_ATTEMPTS) {
-        timeoutId = setTimeout(poll, 3000);
-      }
-    };
-
-    fetchEvents(false).then((data) => {
-      if (!isMounted) return;
-      const currentlyConnected = data?.isConnected ?? false;
-      const currentEventsCount = data?.events?.length ?? 0;
-      if (currentlyConnected && currentEventsCount === 0) {
-        timeoutId = setTimeout(poll, 3000);
-      }
-    });
+    fetchEvents(false);
 
     return () => {
       isMounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
     };
   }, [fetchEvents]);
 

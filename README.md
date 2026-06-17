@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌌 Nova AI — Your Neural Core for Workflow Automation
 
-## Getting Started
+**Nova AI** is an intelligent, unified workspace designed to seamlessly orchestrate your digital communications and calendar logistics. Built for the Corsair Automation AI Hackathon, Nova combines a beautiful Superhuman-style interface with an advanced autonomous AI agent that drafts emails, schedules meetings, and organizes your life.
 
-First, run the development server:
+![Nova AI Workspace](public/logo.svg)
 
+---
+
+## ✨ Features
+
+- **🧠 Autonomous Agent:** Powered by OpenAI (`gpt-4o-mini`) and Corsair MCP, Nova can read your emails, draft responses, and manage your calendar entirely through natural language chat.
+- **⚡ Superhuman Navigation:** A fully keyboard-driven interface. Use `j`/`k` to navigate emails, `/` to search, `Ctrl+K` to command the AI, and `Enter` to dive into threads without ever touching your mouse.
+- **👻 AI Ghost-Typing:** Watch the AI agent type out drafts directly into your floating compose window in real-time, waiting for your final review and confirmation.
+- **🗓️ Smart Calendar Sync:** A beautiful, dynamic timeline view of your day and week, instantly synced with Google Calendar via background webhooks.
+- **🎨 Glassmorphic Design:** A stunning dual-theme (Dark/Light mode) UI with circular reveal transitions, neumorphic elements, and micro-animations.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 15 (App Router), React 19
+- **Database:** PostgreSQL (Neon) with `pgvector` for semantic search
+- **ORM:** Drizzle ORM
+- **AI & Integrations:** 
+  - Corsair Platform (Gmail & Google Calendar Webhooks/OAuth)
+  - `@corsair-dev/mcp` for Tool Calling
+  - OpenAI API (`gpt-4o-mini` & `text-embedding-3-small`)
+- **Styling:** Tailwind CSS, Framer Motion, Vanilla CSS Modules
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone & Install Dependencies
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd nova-workflow-automation
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Variables
+Create a `.env` file in the root directory and configure the following variables:
+```env
+# Database
+DATABASE_URL="postgres://..."
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Corsair Configuration
+CORSAIR_API_KEY="..."
+CORSAIR_WEBHOOK_SECRET="..."
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Next Auth
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-here"
+APP_URL="http://localhost:3000"
 
-## Learn More
+# OpenAI
+OPENAI_API_KEY="..."
+```
 
-To learn more about Next.js, take a look at the following resources:
+### 3. Database Migrations
+Generate and push the Drizzle schema to your Postgres database:
+```bash
+pnpm db:generate
+pnpm db:push
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 4. Run the Development Server
+```bash
+pnpm dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## ⚠️ Important Note for Testers & Judges
+Because Nova requests powerful scopes (`gmail.send`, `gmail.modify`) to perform actions on your behalf, our Google OAuth app is in **Unverified Production** status. 
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+When connecting your Google account, you will see a screen warning that **"Google hasn’t verified this app."**
+1. Click **Advanced** at the bottom left.
+2. Click **Go to nova.rajibdev.me (unsafe)**.
+3. You will then be able to connect your account and use the app normally!
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🏆 Built for the Corsair Automation AI Hackathon 2026
