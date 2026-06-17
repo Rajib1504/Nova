@@ -24,7 +24,7 @@ const INITIAL_MESSAGES: Message[] = [
 ];
 
 interface AgentChatPanelProps {
-  inputRef?: React.RefObject<HTMLInputElement>;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }
 
 export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {

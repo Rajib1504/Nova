@@ -104,8 +104,8 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
                 </div>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48 bg-[#FFF5E4] dark:bg-[#1A1D23] border border-black/10 dark:border-white/20 shadow-lg backdrop-blur-3xl rounded-xl">
-                <DropdownMenuItem asChild className="cursor-pointer font-medium hover:bg-black/5 dark:hover:bg-white/10 p-2.5 rounded-lg focus:bg-black/5 dark:focus:bg-white/10">
-                  <a href="/dashboard">Dashboard</a>
+                <DropdownMenuItem className="cursor-pointer font-medium hover:bg-black/5 dark:hover:bg-white/10 p-2.5 rounded-lg focus:bg-black/5 dark:focus:bg-white/10" onClick={() => window.location.href = '/dashboard'}>
+                  Dashboard
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-black/10 dark:bg-white/10 my-1" />
                 <DropdownMenuItem

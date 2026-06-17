@@ -8,6 +8,7 @@ import { CalendarPanel } from "./CalendarPanel";
 import { AgentChatPanel } from "./AgentChatPanel";
 import { KeyboardShortcutsOverlay } from "./KeyboardShortcutsOverlay";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
+import { toggleThemeWithTransition } from "@/utils/theme";
 
 export const WorkspaceLayout = () => {
   // ─── Theme ──────────────────────────────────────────────
@@ -25,16 +26,8 @@ export const WorkspaceLayout = () => {
     }
   }, []);
 
-  const toggleTheme = () => {
-    if (theme === "light") {
-      setTheme("dark");
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("nova-theme", "dark");
-    } else {
-      setTheme("light");
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("nova-theme", "light");
-    }
+  const toggleTheme = (e: React.MouseEvent) => {
+    toggleThemeWithTransition(e, theme, setTheme);
   };
 
   // ─── Layout ──────────────────────────────────────────────

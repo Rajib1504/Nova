@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { motion } from "framer-motion";
+import { toggleThemeWithTransition } from "@/utils/theme";
 
 export default function AboutPage() {
   const [theme, setTheme] = useState("light");
@@ -19,15 +20,7 @@ export default function AboutPage() {
   }, []);
 
   const toggleTheme = (e: React.MouseEvent) => {
-    if (theme === "light") {
-      setTheme("dark");
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("nova-theme", "dark");
-    } else {
-      setTheme("light");
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("nova-theme", "light");
-    }
+    toggleThemeWithTransition(e, theme, setTheme);
   };
 
   return (

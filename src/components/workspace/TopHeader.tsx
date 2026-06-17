@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export const TopHeader = ({ theme, toggleTheme, searchQuery, setSearchQuery, searchInputRef }: { theme: string, toggleTheme: () => void, searchQuery: string, setSearchQuery: (q: string) => void, searchInputRef?: React.RefObject<HTMLInputElement> }) => {
+export const TopHeader = ({ theme, toggleTheme, searchQuery, setSearchQuery, searchInputRef }: { theme: string, toggleTheme: (e: React.MouseEvent) => void, searchQuery: string, setSearchQuery: (q: string) => void, searchInputRef?: React.RefObject<HTMLInputElement | null> }) => {
   const { data: session } = useSession();
   const userName = session?.user?.name || "Nova User";
   const userImage = session?.user?.image || "https://i.pravatar.cc/150?img=11";

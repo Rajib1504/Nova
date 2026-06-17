@@ -13,6 +13,7 @@ import { Testimonials } from "@/components/Testimonials";
 import { Pricing } from "@/components/Pricing";
 import { FAQ } from "@/components/FAQ";
 import { Footer } from "@/components/Footer";
+import { toggleThemeWithTransition } from "@/utils/theme";
 
 export default function LandingPage() {
   const [theme, setTheme] = useState("light");
@@ -29,15 +30,7 @@ export default function LandingPage() {
   }, []);
 
   const toggleTheme = (e: React.MouseEvent) => {
-    if (theme === "light") {
-      setTheme("dark");
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("nova-theme", "dark");
-    } else {
-      setTheme("light");
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("nova-theme", "light");
-    }
+    toggleThemeWithTransition(e, theme, setTheme);
   };
 
   return (
