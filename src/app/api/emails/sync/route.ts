@@ -70,42 +70,48 @@ export async function POST(req: NextRequest) {
         const uniqueMessages = Array.from(allMessages.values());
         console.log(`📧 Found ${uniqueMessages.length} unique messages across categories. Fetching details...`);
 
-        const { processAndStoreEmail } = await import("../../../../../src/lib/triage");
+        after(async () => {
+          try {
+            const { processAndStoreEmail } = await import("../../../../../src/lib/triage");
 
-        const batchSize = 10;
-        for (let i = 0; i < uniqueMessages.length; i += batchSize) {
-          const batch = uniqueMessages.slice(i, i + batchSize);
-          
-          await Promise.all(
-            batch.map(async (msg) => {
-              try {
-                const msgRes = await (c as any).gmail.api.messages.get({
-                  userId: 'me',
-                  id: msg.id,
-                  format: 'full'
-                });
+            const batchSize = 10;
+            for (let i = 0; i < uniqueMessages.length; i += batchSize) {
+              const batch = uniqueMessages.slice(i, i + batchSize);
+              
+              await Promise.all(
+                batch.map(async (msg) => {
+                  try {
+                    const msgRes = await (c as any).gmail.api.messages.get({
+                      userId: 'me',
+                      id: msg.id,
+                      format: 'full'
+                    });
 
-                const emailData = msgRes;
-                if (!emailData) return;
+                    const emailData = msgRes;
+                    if (!emailData) return;
 
-                const headers = emailData.payload?.headers || [];
-                const subject = headers.find((h: any) => h.name.toLowerCase() === 'subject')?.value || "No Subject";
-                const from = headers.find((h: any) => h.name.toLowerCase() === 'from')?.value || "Unknown Sender";
-                const to = headers.find((h: any) => h.name.toLowerCase() === 'to')?.value || "Unknown";
-                const dateStr = headers.find((h: any) => h.name.toLowerCase() === 'date')?.value || new Date().toISOString();
+                    const headers = emailData.payload?.headers || [];
+                    const subject = headers.find((h: any) => h.name.toLowerCase() === 'subject')?.value || "No Subject";
+                    const from = headers.find((h: any) => h.name.toLowerCase() === 'from')?.value || "Unknown Sender";
+                    const to = headers.find((h: any) => h.name.toLowerCase() === 'to')?.value || "Unknown";
+                    const dateStr = headers.find((h: any) => h.name.toLowerCase() === 'date')?.value || new Date().toISOString();
 
-                const labels = emailData.labelIds || [];
-                const bodyText = emailData.snippet || "";
+                    const labels = emailData.labelIds || [];
+                    const bodyText = emailData.snippet || "";
 
-                await processAndStoreEmail(tenantId, msg.id, from, to, subject, bodyText, dateStr, labels);
-              } catch (err) {
-                console.error(`Error processing message ${msg.id}:`, err);
-              }
-            })
-          );
-        }
+                    await processAndStoreEmail(tenantId, msg.id, from, to, subject, bodyText, dateStr, labels);
+                  } catch (err) {
+                    console.error(`Error processing message ${msg.id}:`, err);
+                  }
+                })
+              );
+            }
 
-        console.log(`🤖 Sync fetch complete!`);
+            console.log(`🤖 Sync fetch complete!`);
+          } catch (err) {
+            console.error(`🤖 Background sync failed:`, err);
+          }
+        });
 
     } catch (e) {
       console.error("Failed to process email sync", e);
