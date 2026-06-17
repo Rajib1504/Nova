@@ -18,8 +18,13 @@ export default function LandingPage() {
   const [theme, setTheme] = useState("light");
 
   useEffect(() => {
-    if (document.documentElement.classList.contains("dark")) {
+    const savedTheme = localStorage.getItem("nova-theme");
+    if (savedTheme === "dark" || (!savedTheme && document.documentElement.classList.contains("dark"))) {
       setTheme("dark");
+      document.documentElement.classList.add("dark");
+    } else {
+      setTheme("light");
+      document.documentElement.classList.remove("dark");
     }
   }, []);
 
@@ -27,9 +32,11 @@ export default function LandingPage() {
     if (theme === "light") {
       setTheme("dark");
       document.documentElement.classList.add("dark");
+      localStorage.setItem("nova-theme", "dark");
     } else {
       setTheme("light");
       document.documentElement.classList.remove("dark");
+      localStorage.setItem("nova-theme", "light");
     }
   };
 

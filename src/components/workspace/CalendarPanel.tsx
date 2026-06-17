@@ -103,7 +103,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
       if (!silent) setIsLoading(true);
       const res = await axios.get("/api/calendar");
       setEvents(res.data.events || []);
-      
+
       if (res.data.isConnected !== undefined) {
         setIsConnected(res.data.isConnected);
       } else if (res.data.events && res.data.events.length > 0) {
@@ -127,10 +127,10 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
     const poll = async () => {
       if (!isMounted) return;
       const data = await fetchEvents(true);
-      
+
       const currentlyConnected = data?.isConnected ?? false;
       const currentEventsCount = data?.events?.length ?? 0;
-      
+
       if (currentlyConnected && currentEventsCount === 0 && isMounted) {
         timeoutId = setTimeout(poll, 3000);
       }
@@ -433,11 +433,22 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
                   <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
                     Data is downloading...
                   </h3>
-                  <p className="text-sm text-gray-500">We are syncing your events...</p>
+                  <p className="text-sm text-gray-500">
+                    We are syncing your events...
+                  </p>
                   <div className="mt-4 flex gap-1 justify-center">
-                    <span className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce" style={{ animationDelay: '300ms' }} />
+                    <span
+                      className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    />
+                    <span
+                      className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    />
+                    <span
+                      className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    />
                   </div>
                 </div>
               )
@@ -836,7 +847,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
                           required
                         />
                       </div>
-                      <div className="flex gap-4">
+                      <div className="flex gap-1 ">
                         <div className="flex-1">
                           <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">
                             Start Time
@@ -850,11 +861,11 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
                                 startTime: e.target.value,
                               })
                             }
-                            className="w-full bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF9494]"
+                            className="w-full bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded-xl px-2 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF9494]"
                             required
                           />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 ">
                           <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 block">
                             End Time
                           </label>
@@ -867,7 +878,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
                                 endTime: e.target.value,
                               })
                             }
-                            className="w-full bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF9494]"
+                            className="w-full bg-white/50 dark:bg-black/20 border border-black/10 dark:border-white/10 rounded-xl px-2 py-3 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#FF9494]"
                             required
                           />
                         </div>

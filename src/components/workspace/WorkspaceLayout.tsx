@@ -11,8 +11,12 @@ export const WorkspaceLayout = () => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Default to dark mode for workspace based on modern app trends, or check system
-    if (!document.documentElement.classList.contains("dark")) {
+    const savedTheme = localStorage.getItem("nova-theme");
+    if (savedTheme === "light") {
+      setTheme("light");
+      document.documentElement.classList.remove("dark");
+    } else {
+      setTheme("dark");
       document.documentElement.classList.add("dark");
     }
   }, []);
@@ -21,9 +25,11 @@ export const WorkspaceLayout = () => {
     if (theme === "light") {
       setTheme("dark");
       document.documentElement.classList.add("dark");
+      localStorage.setItem("nova-theme", "dark");
     } else {
       setTheme("light");
       document.documentElement.classList.remove("dark");
+      localStorage.setItem("nova-theme", "light");
     }
   };
 
