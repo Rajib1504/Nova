@@ -77,7 +77,17 @@ export const AgentChatPanel = ({
         }
       };
 
-      recognition.onerror = () => setIsRecording(false);
+      recognition.onerror = (event: any) => {
+        setIsRecording(false);
+        console.error("SpeechRecognition error:", event.error);
+        if (event.error === 'not-allowed') {
+          toast.error("Microphone blocked. Please allow mic access in your browser address bar.");
+        } else if (event.error === 'network') {
+          toast.error("Network error. Voice input requires a secure connection (HTTPS).");
+        } else {
+          toast.error("Voice input error: " + event.error);
+        }
+      };
       recognition.onend = () => setIsRecording(false);
 
       recognition.start();
