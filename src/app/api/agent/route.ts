@@ -8,13 +8,18 @@ import { eq, and, inArray, count } from "drizzle-orm";
 
 export async function POST(req: Request) {
   try {
-    const { prompt, tenantId } = await req.json();
+    const { prompt, tenantId, draftPayload } = await req.json();
 
     if (!prompt || !tenantId) {
       return NextResponse.json({ error: "Missing prompt or tenantId" }, { status: 400 });
     }
 
-    console.log(`\n🤖 [MCP Agent] Received command: "${prompt}" for tenant: ${tenantId}`);
+    let finalPrompt = prompt;
+    if (draftPayload) {
+      finalPrompt += `\n\n[CRITICAL MEMORY PAYLOAD]\nThe user has finalized an email draft. The exact content is:\nTo: ${draftPayload.to}\nSubject: ${draftPayload.subject}\nBody: ${draftPayload.body}\n\nWhen you use the Gmail tool to send the email, you MUST use exactly these parameters.`;
+    }
+
+    console.log(`\n🤖 [MCP Agent] Received command: "${finalPrompt}" for tenant: ${tenantId}`);
 
     const user = await db.query.users.findFirst({
       where: eq(users.id, tenantId)
@@ -70,7 +75,7 @@ Current System Date and Time: ${new Date().toISOString()}
 
 CORE GUARDRAIL: You are strictly an Email and Calendar assistant. If the user asks any question or requests any task that is outside the scope of managing their Gmail or Google Calendar (e.g., coding, general knowledge, math, content generation unrelated to email), you MUST politely refuse and guide them back to email and calendar topics. If the user asks about their own name or email, use the details provided above.
 
-VOCABULARY: Use advanced SaaS terminology (e.g., "Query Workspace", "Authorize Deployment", "Orchestrated", "Protocol"). Be confident, autonomous, and premium.
+VOCABULARY: Use advanced SaaS terminology (e.g., "Query Workspace", "Authorize Deployment ", "Orchestrated", "Protocol"). Be confident, autonomous, and premium.
 
 You will receive prompts containing [CHAT HISTORY] and [NEW COMMAND]. You MUST follow this strict State Machine for execution:
 
@@ -103,7 +108,7 @@ After the calendar logic is resolved (either scheduled, or they said no), provid
     console.log(`🤖 [MCP Agent] Running Agent...`);
 
     // 4. Run the Agent natively (this automatically handles the thought-loop and tool execution!)
-    const result = await run(agent, prompt);
+    const result = await run(agent, finalPrompt);
 
     console.log(`🤖 [MCP Agent] Agent run complete!`);
 
@@ -111,7 +116,7 @@ After the calendar logic is resolved (either scheduled, or they said no), provid
     await db.insert(auditLogs).values({
       tenantId,
       action: "AGENT_EXECUTION",
-      details: `Prompt: "${prompt}" -> Result: "${result.finalOutput}"`
+      details: `Prompt: "${finalPrompt}" -> Result: "${result.finalOutput}"`
     });
 
     return NextResponse.json({

@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 
 interface Message {
   id: string;
-  sender: "user" | "ai";
+  sender: "user" | "ai" | "system";
   text: string;
 }
 
@@ -25,6 +25,7 @@ const INITIAL_MESSAGES: Message[] = [
 export const AgentChatPanel = () => {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [inputValue, setInputValue] = useState("");
+  const [activeDraft, setActiveDraft] = useState<any>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -44,6 +45,7 @@ export const AgentChatPanel = () => {
 
   useEffect(() => {
     if (confirmedDraft) {
+      setActiveDraft(confirmedDraft);
       const systemMessage = `[System: Final draft ready for review. To: ${confirmedDraft.to}, Subject: ${confirmedDraft.subject}, Body: ${confirmedDraft.body}. Please present this to the user and ask for confirmation to send.]`;
       // Call the API silently
       sendSilentSystemMessage(systemMessage);
@@ -54,6 +56,11 @@ export const AgentChatPanel = () => {
   const sendSilentSystemMessage = async (prompt: string) => {
     if (!tenantId) return;
     setIsTyping(true);
+    
+    // Add system message to the state so it is bundled in history, but NOT rendered in UI
+    const sysMsg: Message = { id: Date.now().toString(), sender: "system", text: prompt };
+    setMessages((prev) => [...prev, sysMsg]);
+
     try {
       const response = await axios.post("/api/agent", { prompt, tenantId });
       let aiText = response.data.message || "Action completed.";
@@ -92,7 +99,7 @@ export const AgentChatPanel = () => {
 
     try {
       const recentHistory = messages
-        .slice(-6)
+        .slice(-10)
         .map((m) => `${m.sender.toUpperCase()}: ${m.text}`)
         .join("\n");
 
@@ -101,6 +108,7 @@ export const AgentChatPanel = () => {
       const response = await axios.post("/api/agent", {
         prompt: contextualPrompt,
         tenantId,
+        draftPayload: activeDraft
       });
 
       let aiText = response.data.message || "Action completed.";
@@ -163,7 +171,7 @@ export const AgentChatPanel = () => {
       {/* Chat Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6 scroll-smooth">
         <AnimatePresence initial={false}>
-          {messages.map((msg) => {
+          {messages.filter(m => m.sender !== "system").map((msg) => {
             const isUser = msg.sender === "user";
             return (
               <motion.div
