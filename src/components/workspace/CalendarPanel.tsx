@@ -61,6 +61,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -130,15 +131,34 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
     }
   }, []);
 
+  const handleRestore = React.useCallback(async () => {
+    setSyncing(true);
+    try {
+      await axios.post("/api/calendar/sync");
+      await fetchEvents();
+    } catch (err) {
+      console.error("Failed to restore history", err);
+    } finally {
+      setSyncing(false);
+    }
+  }, [fetchEvents]);
+
   useEffect(() => {
     let isMounted = true;
 
-    fetchEvents(false);
+    fetchEvents(false).then((data) => {
+      if (!isMounted) return;
+      const currentlyConnected = data?.isConnected ?? false;
+      const currentEventsCount = data?.events?.length ?? 0;
+      if (currentlyConnected && currentEventsCount === 0) {
+        handleRestore();
+      }
+    });
 
     return () => {
       isMounted = false;
     };
-  }, [fetchEvents]);
+  }, [fetchEvents, handleRestore]);
 
   const handlePrev = () =>
     setBaseDate(addDays(baseDate, viewMode === "week" ? -7 : -1));
@@ -300,7 +320,6 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
                   onClick={() => setViewMode("week")}
                   className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${viewMode === "week" ? "bg-white dark:bg-[#23232A] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
                 >
-                  Week
                 </button>
               </div>
             </div>
@@ -418,27 +437,27 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
                 </div>
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center h-full text-center mt-12 mb-12">
-                  <CalendarIcon className="w-12 h-12 mb-4 opacity-50 text-gray-500" />
-                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Data is downloading...
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    We are syncing your events...
-                  </p>
-                  <div className="mt-4 flex gap-1 justify-center">
-                    <span
-                      className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce"
-                      style={{ animationDelay: "0ms" }}
-                    />
-                    <span
-                      className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce"
-                      style={{ animationDelay: "150ms" }}
-                    />
-                    <span
-                      className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce"
-                      style={{ animationDelay: "300ms" }}
-                    />
-                  </div>
+                  {syncing ? (
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="w-8 h-8 border-4 border-[#FF9494] border-t-transparent rounded-full animate-spin mb-4 mx-auto" />
+                      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        Syncing Calendar Data...
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        Please wait while we securely fetch your events from Google.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center">
+                      <CalendarIcon className="w-12 h-12 mb-4 opacity-50 text-gray-500 mx-auto" />
+                      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                        No events found
+                      </h3>
+                      <p className="text-sm text-gray-500">
+                        There are no upcoming events in your calendar.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )
             ) : (
