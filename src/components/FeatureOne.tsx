@@ -141,13 +141,15 @@ export const FeatureOne = () => {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="relative"
           >
-            <BlobButton
-              blobColor="#FF7B7B"
-              textColor="#FF7B7B"
-              hoverTextColor="#FFFFFF"
-            >
-              Authorize Protocol <ArrowRight className="w-4 h-4 ml-2 inline" />
-            </BlobButton>
+            <a href="/dashboard">
+              <BlobButton
+                blobColor="#FF7B7B"
+                textColor="#FF7B7B"
+                hoverTextColor="#FFFFFF"
+              >
+                Authorize Protocol <ArrowRight className="w-4 h-4 ml-2 inline" />
+              </BlobButton>
+            </a>
 
             {/* Doodle Arrow pointing to mockup */}
             <motion.svg

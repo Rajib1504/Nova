@@ -9,6 +9,7 @@
 ## ✨ Features
 
 - **🧠 Autonomous Agent:** Powered by OpenAI (`gpt-4o-mini`) and Corsair MCP, Nova can read your emails, draft responses, and manage your calendar entirely through natural language chat.
+- **🎤 Voice Command & Dictation:** Speak directly to Nova using your browser's native Web Speech API. Supports both English and Hindi (Hinglish) with human-in-the-loop review before executing commands.
 - **⚡ Superhuman Navigation:** A fully keyboard-driven interface. Use `j`/`k` to navigate emails, `/` to search, `Ctrl+K` to command the AI, and `Enter` to dive into threads without ever touching your mouse.
 - **👻 AI Ghost-Typing:** Watch the AI agent type out drafts directly into your floating compose window in real-time, waiting for your final review and confirmation.
 - **🗓️ Smart Calendar Sync:** A beautiful, dynamic timeline view of your day and week, instantly synced with Google Calendar via background webhooks.

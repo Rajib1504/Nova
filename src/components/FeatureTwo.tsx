@@ -159,13 +159,15 @@ export const FeatureTwo = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <BlobButton
-              blobColor="#3B82F6"
-              textColor="#3B82F6"
-              hoverTextColor="#FFFFFF"
-            >
-              Sync Telemetry <ArrowRight className="w-4 h-4 ml-2 inline" />
-            </BlobButton>
+            <a href="/dashboard">
+              <BlobButton
+                blobColor="#3B82F6"
+                textColor="#3B82F6"
+                hoverTextColor="#FFFFFF"
+              >
+                Sync Telemetry <ArrowRight className="w-4 h-4 ml-2 inline" />
+              </BlobButton>
+            </a>
           </motion.div>
         </div>
         

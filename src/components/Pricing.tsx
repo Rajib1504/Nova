@@ -188,12 +188,14 @@ export const Pricing = () => {
                   {plan.isPopular ? (
                     <div className="w-full h-[52px]">
                       {/* The BlobButton manages its own height/padding, we just wrap it to ensure space */}
-                      <BlobButton>Initialize Vanguard</BlobButton>
+                      <a href="/dashboard"><BlobButton>Initialize Vanguard</BlobButton></a>
                     </div>
                   ) : (
-                    <BlobButton className="w-full h-[52px]">
-                      Select Protocol
-                    </BlobButton>
+                    <a href="/dashboard">
+                      <BlobButton className="w-full h-[52px]">
+                        Select Protocol
+                      </BlobButton>
+                    </a>
                   )}
                 </div>
               </motion.div>
