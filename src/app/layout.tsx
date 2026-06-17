@@ -25,6 +25,8 @@ export const metadata: Metadata = {
 
 import { AuthProviders } from "@/components/AuthProviders";
 
+import { Toaster } from "react-hot-toast";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -41,6 +43,29 @@ export default function RootLayout({
           <AnimatedBackground />
           <CustomCursor />
           {children}
+          <Toaster 
+            position="bottom-right"
+            toastOptions={{
+              className: "glass !bg-white/80 dark:!bg-[#23232A]/90 !text-gray-900 dark:!text-white !border !border-white/20 dark:!border-white/10 !shadow-lg",
+              style: {
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                borderRadius: '16px',
+              },
+              success: {
+                iconTheme: {
+                  primary: '#FF9494',
+                  secondary: 'white',
+                },
+              },
+              error: {
+                iconTheme: {
+                  primary: '#EF4444',
+                  secondary: 'white',
+                },
+              },
+            }}
+          />
         </AuthProviders>
       </body>
     </html>

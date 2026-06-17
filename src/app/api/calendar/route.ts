@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { db } from "../../../db";
-import { calendarEvents } from "../../../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { calendarEvents, corsairAccounts, corsairIntegrations } from "../../../db/schema";
+import { eq, desc, and } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,6 +16,20 @@ export async function GET(req: NextRequest) {
     const tenantId = session.user.id;
     console.log(`\n📅 Fetching Calendar Events for tenant: ${tenantId}`);
 
+    const connectedAccount = await db
+      .select()
+      .from(corsairAccounts)
+      .innerJoin(corsairIntegrations, eq(corsairAccounts.integrationId, corsairIntegrations.id))
+      .where(
+        and(
+          eq(corsairAccounts.tenantId, `user_${tenantId}`),
+          eq(corsairIntegrations.name, "googlecalendar")
+        )
+      )
+      .limit(1);
+
+    const isConnected = connectedAccount.length > 0;
+
     // Fetch events from our local Drizzle DB
     const events = await db.query.calendarEvents.findMany({
       where: eq(calendarEvents.userId, tenantId),
@@ -23,7 +37,7 @@ export async function GET(req: NextRequest) {
       limit: 100,
     });
 
-    return NextResponse.json({ events });
+    return NextResponse.json({ events, isConnected });
 
   } catch (error) {
     console.error("Calendar fetch error:", error);

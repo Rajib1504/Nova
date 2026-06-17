@@ -5,7 +5,7 @@ import { db } from "../../../../db";
 import { emails } from "../../../../db/schema";
 import { eq, and } from "drizzle-orm";
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     }
 
     const tenantId = session.user.id;
-    const emailId = params.id;
+    const { id: emailId } = await params;
 
     // Fetch the specific email, this time INCLUDING the body
     const email = await db.query.emails.findFirst({

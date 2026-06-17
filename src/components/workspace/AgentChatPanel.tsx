@@ -5,6 +5,8 @@ import { Mic, Send, Hexagon } from "lucide-react";
 import Image from "next/image";
 import axios from "axios";
 import { useSession } from "next-auth/react";
+import { useNovaContext } from "@/context/NovaContext";
+import toast from "react-hot-toast";
 
 interface Message {
   id: string;
@@ -29,6 +31,7 @@ export const AgentChatPanel = () => {
   
   const { data: session } = useSession();
   const tenantId = session?.user?.id;
+  const { startNovaDraft, confirmedDraft, clearConfirmedDraft } = useNovaContext();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -37,6 +40,39 @@ export const AgentChatPanel = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    if (confirmedDraft) {
+      const systemMessage = `[System: Final draft ready for review. To: ${confirmedDraft.to}, Subject: ${confirmedDraft.subject}, Body: ${confirmedDraft.body}. Please present this to the user and ask for confirmation to send.]`;
+      // Call the API silently
+      sendSilentSystemMessage(systemMessage);
+      clearConfirmedDraft();
+    }
+  }, [confirmedDraft]);
+
+  const sendSilentSystemMessage = async (prompt: string) => {
+    if (!tenantId) return;
+    setIsTyping(true);
+    try {
+      const response = await axios.post("/api/agent", { prompt, tenantId });
+      let aiText = response.data.message || "Action completed.";
+      
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: "ai",
+          text: aiText,
+        },
+      ]);
+    } catch (error: any) {
+      console.error("Agent execution error:", error);
+      const errorMessage = error.response?.data?.error || "I encountered an error.";
+      toast.error(errorMessage);
+    } finally {
+      setIsTyping(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!inputValue.trim() || !tenantId) return;
@@ -58,7 +94,15 @@ export const AgentChatPanel = () => {
         tenantId,
       });
 
-      const aiText = response.data.message || "Action completed.";
+      let aiText = response.data.message || "Action completed.";
+
+      const composeRegex = /<UI_COMMAND type="COMPOSE" to="([^"]*)" subject="([^"]*)" body="([\s\S]*?)" \/>/;
+      const match = aiText.match(composeRegex);
+      if (match) {
+        startNovaDraft({ to: match[1], subject: match[2], body: match[3] });
+        aiText = aiText.replace(composeRegex, "").trim();
+        if (!aiText) aiText = "I have opened the compose window and drafted the email. You can edit it now. Once you're ready, click **Confirm Draft**.";
+      }
       
       setMessages((prev) => [
         ...prev,
@@ -71,14 +115,7 @@ export const AgentChatPanel = () => {
     } catch (error: any) {
       console.error("Agent execution error:", error);
       const errorMessage = error.response?.data?.error || "I encountered an error while trying to process your request. Please try again.";
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          sender: "ai",
-          text: `**System Alert:** ${errorMessage}`,
-        },
-      ]);
+      toast.error(errorMessage);
     } finally {
       setIsTyping(false);
     }

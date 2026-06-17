@@ -2,19 +2,33 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { db } from "../../../db";
-import { emails } from "../../../db/schema";
-import { eq, desc } from "drizzle-orm";
+import { emails, corsairAccounts, corsairIntegrations } from "../../../db/schema";
+import { eq, desc, and } from "drizzle-orm";
 
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-    
+
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = session.user.id;
     console.log(`\n📧 Fetching database emails for user: ${tenantId}`);
+
+    const connectedAccount = await db
+      .select()
+      .from(corsairAccounts)
+      .innerJoin(corsairIntegrations, eq(corsairAccounts.integrationId, corsairIntegrations.id))
+      .where(
+        and(
+          eq(corsairAccounts.tenantId, `user_${tenantId}`),
+          eq(corsairIntegrations.name, "gmail")
+        )
+      )
+      .limit(1);
+
+    const isConnected = connectedAccount.length > 0;
 
     // Fetch emails from the database, ordered by newest first
     const userEmails = await db.query.emails.findMany({
@@ -35,7 +49,7 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    return NextResponse.json({ emails: userEmails });
+    return NextResponse.json({ emails: userEmails, isConnected });
 
   } catch (error) {
     console.error("Emails fetch error:", error);

@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const tenantId = String(session.user.id); // Real dynamic user ID!
   // Force it to be a non-numeric string to bypass the Corsair SDK coercion bug
   const corsairTenantId = `user_${tenantId}`;
-  
+
   const plugin = new URL(request.url).searchParams.get("plugin");
 
   if (!plugin) {
@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
   }
 
   // 2. Tell Corsair to start the connection for this specific user
-  const { url, state } = await generateOAuthUrl(corsair, plugin, {
+  const scopedCorsair = corsair.withTenant(corsairTenantId);
+  const { url, state } = await generateOAuthUrl(scopedCorsair, plugin, {
     tenantId: corsairTenantId,
     redirectUri: REDIRECT_URI,
   });

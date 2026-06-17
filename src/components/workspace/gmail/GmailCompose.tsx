@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Minus, Maximize2, Paperclip, Link as LinkIcon, Image as ImageIcon, Smile, Send } from "lucide-react";
 import { api } from "@/lib/axios";
+import { useNovaContext } from "@/context/NovaContext";
 
 import { BlobButton } from "../../BlobButton";
 
@@ -21,6 +22,21 @@ export const GmailCompose: React.FC<GmailComposeProps> = ({ onClose, initialTo =
   const [body, setBody] = useState("");
   
   const [isSending, setIsSending] = useState(false);
+
+  const { isNovaControlled, isGhostTyping, novaDraft, finishGhostTyping, confirmDraft } = useNovaContext();
+
+  React.useEffect(() => {
+    if (isNovaControlled && novaDraft) {
+      setTo(novaDraft.to);
+      setSubject(novaDraft.subject);
+      setBody(novaDraft.body);
+      
+      if (isGhostTyping) {
+        // Simulate Nova typing the email
+        setTimeout(() => finishGhostTyping(), 2000);
+      }
+    }
+  }, [isNovaControlled]); // Intentionally only run when Nova takes control
 
   const handleSend = async () => {
     if (!to || !body) return;
@@ -98,7 +114,8 @@ export const GmailCompose: React.FC<GmailComposeProps> = ({ onClose, initialTo =
                 type="text" 
                 value={to}
                 onChange={(e) => setTo(e.target.value)}
-                className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white"
+                readOnly={isGhostTyping}
+                className={`flex-1 bg-transparent border-none outline-none text-sm text-gray-900 dark:text-white ${isGhostTyping ? 'opacity-70 cursor-not-allowed' : ''}`}
                 autoFocus
               />
               <span className="text-xs text-gray-400 cursor-pointer hover:underline">Cc Bcc</span>
@@ -111,31 +128,45 @@ export const GmailCompose: React.FC<GmailComposeProps> = ({ onClose, initialTo =
                 placeholder="Subject"
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="flex-1 bg-transparent border-none outline-none text-sm font-medium text-gray-900 dark:text-white"
+                readOnly={isGhostTyping}
+                className={`flex-1 bg-transparent border-none outline-none text-sm font-medium text-gray-900 dark:text-white ${isGhostTyping ? 'opacity-70 cursor-not-allowed' : ''}`}
               />
             </div>
 
             {/* Editor Area */}
             <div className="flex-1 p-4 overflow-y-auto">
               <textarea 
-                className="w-full h-full bg-transparent border-none outline-none resize-none text-sm text-gray-800 dark:text-gray-200"
+                className={`w-full h-full bg-transparent border-none outline-none resize-none text-sm text-gray-800 dark:text-gray-200 ${isGhostTyping ? 'opacity-70 cursor-not-allowed' : ''}`}
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
+                readOnly={isGhostTyping}
               />
             </div>
 
             {/* Bottom Toolbar */}
             <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-[#23232A] border-t border-gray-200 dark:border-white/10">
               <div className="flex items-center gap-2">
-                <BlobButton 
-                  onClick={handleSend}
-                  disabled={isSending || !to || !body}
-                  size="sm"
-                  className={`flex items-center gap-2 transition-opacity ${isSending || !to || !body ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  {isSending ? "Sending..." : "Send"}
-                  {!isSending && <Send className="w-3 h-3" />}
-                </BlobButton>
+                {isNovaControlled ? (
+                  <BlobButton 
+                    onClick={() => confirmDraft({ to, subject, body })}
+                    disabled={isGhostTyping}
+                    size="sm"
+                    className={`flex items-center gap-2 transition-opacity ${isGhostTyping ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {isGhostTyping ? "Nova Drafting..." : "Confirm Draft"}
+                    {!isGhostTyping && <Send className="w-3 h-3" />}
+                  </BlobButton>
+                ) : (
+                  <BlobButton 
+                    onClick={handleSend}
+                    disabled={isSending || !to || !body}
+                    size="sm"
+                    className={`flex items-center gap-2 transition-opacity ${isSending || !to || !body ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {isSending ? "Sending..." : "Send"}
+                    {!isSending && <Send className="w-3 h-3" />}
+                  </BlobButton>
+                )}
                 
                 {/* Formatting Tools */}
                 <div className="flex items-center gap-1 ml-4 text-gray-500 dark:text-gray-400">

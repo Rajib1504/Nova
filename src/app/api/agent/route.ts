@@ -24,18 +24,14 @@ export async function POST(req: Request) {
 
     const corsairTenantId = `user_${tenantId}`;
 
-    // PRE-FLIGHT AUTH CHECK: Ensure both Gmail and Calendar are connected
+    // PRE-FLIGHT AUTH CHECK: Ensure at least Gmail or Calendar is connected
     const accounts = await db.query.corsairAccounts.findMany({
-      where: and(
-        eq(corsairAccounts.tenantId, corsairTenantId),
-        inArray(corsairAccounts.integrationId, ["gmail", "googlecalendar"])
-      )
+      where: eq(corsairAccounts.tenantId, corsairTenantId)
     });
-    
-    const connectedIntegrations = new Set(accounts.map(a => a.integrationId));
-    if (!connectedIntegrations.has("gmail") || !connectedIntegrations.has("googlecalendar")) {
-      return NextResponse.json({ 
-        error: "Nova requires both Gmail and Google Calendar to be connected. Please connect them in the sidebar.",
+
+    if (accounts.length === 0) {
+      return NextResponse.json({
+        error: "Nova requires Gmail or Google Calendar to be connected. Please connect any one of them in the sidebar.",
         type: "AUTH_REQUIRED"
       }, { status: 403 });
     }
@@ -49,8 +45,8 @@ export async function POST(req: Request) {
     );
     const usageCount = usageQuery[0].count;
 
-    if (usageCount >= 10) {
-      return NextResponse.json({ 
+    if (usageCount >= 20) {
+      return NextResponse.json({
         error: "You have reached your free tier limit of 10 Nova executions.",
         type: "RATE_LIMIT"
       }, { status: 429 });
@@ -61,12 +57,13 @@ export async function POST(req: Request) {
 
     // 2. Build the tools and specifically pass the user's tenantId so Corsair knows whose accounts to use
     // Force the prefix to bypass Corsair SDK numeric coercion bug
-    const tools = provider.build({ corsair, tool, tenantId: corsairTenantId });
+    const scopedCorsair = corsair.withTenant(corsairTenantId);
+    const tools = provider.build({ corsair: scopedCorsair, tool });
 
     // 3. Create the Agent
     const agent = new Agent({
       name: 'nova-ai-agent',
-      model: 'gpt-4o',
+      // model: 'gpt-4o',
       instructions:
         `You are NOVA - Personal Workflow Automator, an elite digital assistant for ${userName} (${userEmail}). You were created by Rajib Sardar. 
 Current System Date and Time: ${new Date().toISOString()}

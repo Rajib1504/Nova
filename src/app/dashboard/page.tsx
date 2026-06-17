@@ -1,5 +1,10 @@
 import { WorkspaceLayout } from "@/components/workspace/WorkspaceLayout";
+import { NovaProvider } from "@/context/NovaContext";
 
 export default function Dashboard() {
-  return <WorkspaceLayout />;
+  return (
+    <NovaProvider>
+      <WorkspaceLayout />
+    </NovaProvider>
+  );
 }

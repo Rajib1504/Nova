@@ -11,6 +11,9 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
+  pages: {
+    signIn: "/", // Redirect unauthorized users to our beautiful homepage instead of the default NextAuth page
+  },
   callbacks: {
     async signIn({ user }) {
       if (!user.email || !user.id) {

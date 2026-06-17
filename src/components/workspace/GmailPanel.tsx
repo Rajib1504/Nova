@@ -6,6 +6,7 @@ import { GmailSidebar, SIDEBAR_ITEMS } from "./gmail/GmailSidebar";
 import { GmailContent } from "./gmail/GmailContent";
 import { GmailCompose } from "./gmail/GmailCompose";
 import { EmailMessage } from "@/types/models";
+import { useNovaContext } from "@/context/NovaContext";
 
 interface GmailPanelProps {
   isCollapsed: boolean;
@@ -23,6 +24,7 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
   const [isComposing, setIsComposing] = useState(false);
   const [replyTo, setReplyTo] = useState("");
   const [replySubject, setReplySubject] = useState("");
+  const { isNovaControlled, clearNovaDraft } = useNovaContext();
 
   const handleCompose = () => {
     setReplyTo("");
@@ -36,27 +38,31 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
     setIsComposing(true);
   };
 
-  const fetchEmails = async () => {
+  const fetchEmails = React.useCallback(async (silent = false) => {
     try {
+      if (!silent) setLoading(true);
       // Using the new axios api instance
       const res = await api.get("/api/emails");
-      if (res.data && res.data.emails) {
-        setEmails(res.data.emails);
-        // If we fetched any emails, we are definitely connected.
-        if (res.data.emails.length > 0) {
+      if (res.data) {
+        if (res.data.emails) {
+          setEmails(res.data.emails);
+        }
+        if (res.data.isConnected !== undefined) {
+          setIsConnected(res.data.isConnected);
+        } else if (res.data.emails && res.data.emails.length > 0) {
           setIsConnected(true);
         } else {
-          // You might want a dedicated status endpoint, but for now we assume
-          // 0 emails means they haven't connected or synced.
           setIsConnected(false);
         }
       }
+      return res.data;
     } catch (err) {
       console.error("Failed to fetch emails", err);
+      return null;
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, []);
 
   const handleRestore = async () => {
     setSyncing(true);
@@ -72,13 +78,35 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchEmails();
+    let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
 
-    // Auto-refresh every 30 seconds to catch newly processed webhook emails without spamming logs
-    const interval = setInterval(fetchEmails, 30000);
-    return () => clearInterval(interval);
-  }, []);
+    const poll = async () => {
+      if (!isMounted) return;
+      const data = await fetchEmails(true);
+      
+      const currentlyConnected = data?.isConnected ?? false;
+      const currentEmailsCount = data?.emails?.length ?? 0;
+      
+      if (currentlyConnected && currentEmailsCount === 0 && isMounted) {
+        timeoutId = setTimeout(poll, 3000);
+      }
+    };
+
+    fetchEmails(false).then((data) => {
+      if (!isMounted) return;
+      const currentlyConnected = data?.isConnected ?? false;
+      const currentEmailsCount = data?.emails?.length ?? 0;
+      if (currentlyConnected && currentEmailsCount === 0) {
+        timeoutId = setTimeout(poll, 3000);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [fetchEmails]);
 
   const getFilteredEmails = (label: string) => {
     switch (label) {
@@ -152,9 +180,12 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
       </Tabs>
 
       {/* Floating Compose Window */}
-      {isComposing && (
+      {(isComposing || isNovaControlled) && (
         <GmailCompose
-          onClose={() => setIsComposing(false)}
+          onClose={() => {
+            setIsComposing(false);
+            if (isNovaControlled) clearNovaDraft();
+          }}
           initialTo={replyTo}
           initialSubject={replySubject}
         />
