@@ -116,7 +116,7 @@ export const AgentChatPanel = () => {
       // TRIGGER SYNC: If the AI just executed a confirmed draft, force a background sync & UI refresh
       if (activeDraft) {
         try {
-          await axios.get("/api/emails/sync");
+          await axios.post("/api/emails/sync");
         } catch (syncErr) {
           console.error("Sync failed:", syncErr);
         }

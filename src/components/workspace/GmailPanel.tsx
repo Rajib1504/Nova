@@ -79,34 +79,21 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
 
   useEffect(() => {
     let isMounted = true;
-    let timeoutId: NodeJS.Timeout;
-
-    const poll = async () => {
-      if (!isMounted) return;
-      const data = await fetchEmails(true);
-      
-      const currentlyConnected = data?.isConnected ?? false;
-      const currentEmailsCount = data?.emails?.length ?? 0;
-      
-      if (currentlyConnected && currentEmailsCount === 0 && isMounted) {
-        timeoutId = setTimeout(poll, 3000);
-      }
-    };
 
     fetchEmails(false).then((data) => {
       if (!isMounted) return;
       const currentlyConnected = data?.isConnected ?? false;
       const currentEmailsCount = data?.emails?.length ?? 0;
       if (currentlyConnected && currentEmailsCount === 0) {
-        timeoutId = setTimeout(poll, 3000);
+        // Automatically pull in Inbox, Sent, Drafts, Trash etc. if DB is empty
+        handleRestore();
       }
     });
 
     return () => {
       isMounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [fetchEmails]);
+  }, [fetchEmails]); // handleRestore omitted to prevent infinite loop hooks
 
   const getFilteredEmails = (label: string) => {
     switch (label) {
