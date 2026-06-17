@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { corsair } from "../../../../../corsair";
-import { google } from "googleapis";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +17,7 @@ export async function POST(req: NextRequest) {
 
     const tenantId = session.user.id;
     const corsairTenantId = `user_${tenantId}`;
-    
+
     // Setup Corsair proxy
     const c = corsair.withTenant(corsairTenantId);
 

@@ -4,7 +4,8 @@ import { Agent, run, tool } from "@openai/agents";
 import { corsair } from "../../../../corsair";
 import { db } from "../../../db";
 import { auditLogs, users, corsairAccounts } from "../../../db/schema";
-import { eq, and, inArray, count } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
+import { createStoreEmailTool } from "../../../lib/agent-tools";
 
 export async function POST(req: Request) {
   try {
@@ -50,9 +51,9 @@ export async function POST(req: Request) {
     );
     const usageCount = usageQuery[0].count;
 
-    if (usageCount >= 10) {
+    if (usageCount >= 20) {
       return NextResponse.json({
-        error: "You have reached your free tier limit of 10 Nova executions.",
+        error: "You have reached your free tier limit of 20 Nova executions.",
         type: "RATE_LIMIT"
       }, { status: 429 });
     }
@@ -63,9 +64,13 @@ export async function POST(req: Request) {
     // 2. Build the tools and specifically pass the user's tenantId so Corsair knows whose accounts to use
     // Force the prefix to bypass Corsair SDK numeric coercion bug
     const scopedCorsair = corsair.withTenant(corsairTenantId);
-    const tools = provider.build({ corsair: scopedCorsair, tool });
+    const corsairTools = provider.build({ corsair: scopedCorsair, tool });
 
-    // 3. Create the Agent
+    // 3. Add our custom store_email tool so the agent can save emails to the local DB
+    const storeEmailTool = createStoreEmailTool(tenantId);
+    const tools = [...corsairTools, storeEmailTool];
+
+    // 4. Create the Agent
     const agent = new Agent({
       name: 'nova-ai-agent',
       // model: 'gpt-4o',

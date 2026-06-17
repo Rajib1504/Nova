@@ -28,6 +28,7 @@ import {
   addMinutes,
 } from "date-fns";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 import { BlobButton } from "../BlobButton";
 import { CalendarEvent } from "@/types/models";
 interface CalendarPanelProps {
@@ -41,6 +42,8 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
   isCollapsed,
   onToggleCollapse,
 }) => {
+  const { data: session } = useSession();
+  const calendarOwnerName = session?.user?.name || "Me";
   const [selectedMeeting, setSelectedMeeting] = useState<string | null>(null);
   const [editingMeetingId, setEditingMeetingId] = useState<string | null>(null);
   const [isCreatingEvent, setIsCreatingEvent] = useState(false);
@@ -120,18 +123,23 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
     }
   }, []);
 
+  const MAX_POLL_ATTEMPTS = 5;
+
   useEffect(() => {
     let isMounted = true;
     let timeoutId: NodeJS.Timeout;
+    let pollAttempts = 0;
 
     const poll = async () => {
-      if (!isMounted) return;
+      if (!isMounted || pollAttempts >= MAX_POLL_ATTEMPTS) return;
+      pollAttempts++;
       const data = await fetchEvents(true);
 
       const currentlyConnected = data?.isConnected ?? false;
       const currentEventsCount = data?.events?.length ?? 0;
 
-      if (currentlyConnected && currentEventsCount === 0 && isMounted) {
+      // Keep polling only if connected but still empty, and under the attempt cap
+      if (currentlyConnected && currentEventsCount === 0 && isMounted && pollAttempts < MAX_POLL_ATTEMPTS) {
         timeoutId = setTimeout(poll, 3000);
       }
     };
@@ -784,7 +792,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
 
                                 <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                                   <CalendarIcon className="w-4 h-4" />
-                                  <span>Rajib sardar</span>
+                                  <span>{calendarOwnerName}</span>
                                 </div>
                               </div>
                             </div>

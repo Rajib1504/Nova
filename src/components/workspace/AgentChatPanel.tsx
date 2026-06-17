@@ -30,6 +30,8 @@ export const AgentChatPanel = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Holds the AbortController for the current in-flight agent request
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const { data: session } = useSession();
   const tenantId = session?.user?.id;
@@ -61,13 +63,19 @@ export const AgentChatPanel = () => {
   const sendSilentSystemMessage = async (prompt: string) => {
     if (!tenantId) return;
     setIsTyping(true);
-    
+
     // Add system message to the state so it is bundled in history, but NOT rendered in UI
     const sysMsg: Message = { id: Date.now().toString(), sender: "system", text: prompt };
     setMessages((prev) => [...prev, sysMsg]);
 
+    // Create a fresh AbortController for this request
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
-      const response = await axios.post("/api/agent", { prompt, tenantId });
+      const response = await axios.post("/api/agent", { prompt, tenantId }, {
+        signal: controller.signal,
+      });
       let aiText = response.data.message || "Action completed.";
 
       setMessages((prev) => [
@@ -79,12 +87,17 @@ export const AgentChatPanel = () => {
         },
       ]);
     } catch (error: any) {
+      // If the request was aborted by the user, don't show an error toast
+      if (axios.isCancel(error) || error.name === "CanceledError" || error.code === "ERR_CANCELED") {
+        console.log("[Nova] Agent request cancelled by user.");
+        return;
+      }
       console.error("Agent execution error:", error);
-      const errorMessage =
-        error.response?.data?.error || "I encountered an error.";
+      const errorMessage = error.response?.data?.error || "I encountered an error.";
       toast.error(errorMessage);
     } finally {
       setIsTyping(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -102,6 +115,10 @@ export const AgentChatPanel = () => {
     setInputValue("");
     setIsTyping(true);
 
+    // Create a fresh AbortController for this request
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
       const recentHistory = messages
         .slice(-10)
@@ -114,6 +131,8 @@ export const AgentChatPanel = () => {
         prompt: contextualPrompt,
         tenantId,
         draftPayload: activeDraft
+      }, {
+        signal: controller.signal,
       });
 
       // TRIGGER SYNC: If the AI just executed a confirmed draft, force a background sync & UI refresh
@@ -150,6 +169,11 @@ export const AgentChatPanel = () => {
         },
       ]);
     } catch (error: any) {
+      // If the request was aborted by the user, don't show an error toast
+      if (axios.isCancel(error) || error.name === "CanceledError" || error.code === "ERR_CANCELED") {
+        console.log("[Nova] Agent request cancelled by user.");
+        return;
+      }
       console.error("Agent execution error:", error);
       const errorMessage =
         error.response?.data?.error ||
@@ -157,6 +181,7 @@ export const AgentChatPanel = () => {
       toast.error(errorMessage);
     } finally {
       setIsTyping(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -328,7 +353,11 @@ export const AgentChatPanel = () => {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
-                onClick={() => setIsTyping(false)}
+                onClick={() => {
+                  // Cancel the in-flight HTTP request, then reset UI state
+                  abortControllerRef.current?.abort();
+                  setIsTyping(false);
+                }}
                 className="w-8 h-8 shrink-0 rounded-full bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-900 flex items-center justify-center shadow-md hover:bg-gray-700 dark:hover:bg-white transition-colors ml-2"
               >
                 <div className="w-3 h-3 bg-current rounded-sm" />

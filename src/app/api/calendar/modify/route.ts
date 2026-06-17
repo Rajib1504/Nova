@@ -5,7 +5,6 @@ import { corsair } from "../../../../../corsair";
 import { db } from "../../../../db";
 import { calendarEvents } from "../../../../db/schema";
 import { eq } from "drizzle-orm";
-import { google } from "googleapis"
 
 export async function POST(req: NextRequest) {
   try {
