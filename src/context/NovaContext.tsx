@@ -33,8 +33,7 @@ export const NovaProvider = ({ children }: { children: ReactNode }) => {
   const [confirmedDraft, setConfirmedDraft] = useState<NovaDraft | null>(null);
 
   const startNovaDraft = (draft: NovaDraft) => {
-    // Start with empty to simulate typing
-    setNovaDraft({ to: "", subject: "", body: "" });
+    setNovaDraft(draft);
     setIsNovaControlled(true);
     setIsGhostTyping(true);
   };

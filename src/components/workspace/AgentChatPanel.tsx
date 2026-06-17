@@ -28,10 +28,11 @@ export const AgentChatPanel = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   const { data: session } = useSession();
   const tenantId = session?.user?.id;
-  const { startNovaDraft, confirmedDraft, clearConfirmedDraft } = useNovaContext();
+  const { startNovaDraft, confirmedDraft, clearConfirmedDraft } =
+    useNovaContext();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -56,7 +57,7 @@ export const AgentChatPanel = () => {
     try {
       const response = await axios.post("/api/agent", { prompt, tenantId });
       let aiText = response.data.message || "Action completed.";
-      
+
       setMessages((prev) => [
         ...prev,
         {
@@ -67,7 +68,8 @@ export const AgentChatPanel = () => {
       ]);
     } catch (error: any) {
       console.error("Agent execution error:", error);
-      const errorMessage = error.response?.data?.error || "I encountered an error.";
+      const errorMessage =
+        error.response?.data?.error || "I encountered an error.";
       toast.error(errorMessage);
     } finally {
       setIsTyping(false);
@@ -89,21 +91,31 @@ export const AgentChatPanel = () => {
     setIsTyping(true);
 
     try {
+      const recentHistory = messages
+        .slice(-6)
+        .map((m) => `${m.sender.toUpperCase()}: ${m.text}`)
+        .join("\n");
+
+      const contextualPrompt = `[CHAT HISTORY]\n${recentHistory}\n[NEW COMMAND]\nUSER: ${userText}`;
+
       const response = await axios.post("/api/agent", {
-        prompt: userText,
+        prompt: contextualPrompt,
         tenantId,
       });
 
       let aiText = response.data.message || "Action completed.";
 
-      const composeRegex = /<UI_COMMAND type="COMPOSE" to="([^"]*)" subject="([^"]*)" body="([\s\S]*?)" \/>/;
+      const composeRegex =
+        /<UI_COMMAND\s+type="COMPOSE"\s+to="([^"]*)"\s+subject="([^"]*)"\s+body="([\s\S]*?)"\s*\/>/;
       const match = aiText.match(composeRegex);
       if (match) {
         startNovaDraft({ to: match[1], subject: match[2], body: match[3] });
         aiText = aiText.replace(composeRegex, "").trim();
-        if (!aiText) aiText = "I have opened the compose window and drafted the email. You can edit it now. Once you're ready, click **Confirm Draft**.";
+        if (!aiText) {
+          aiText = `I have opened the compose window and drafted the email:<br/><br/><strong>To:</strong> ${match[1]}<br/><strong>Subject:</strong> ${match[2]}<br/><br/><div style="padding-left:10px; border-left: 2px solid #FF9494; color: gray;">${match[3].replace(/\n/g, '<br/>')}</div><br/>You can edit it now. Once you're ready, click <strong>Confirm Draft</strong>.`;
+        }
       }
-      
+
       setMessages((prev) => [
         ...prev,
         {
@@ -114,7 +126,9 @@ export const AgentChatPanel = () => {
       ]);
     } catch (error: any) {
       console.error("Agent execution error:", error);
-      const errorMessage = error.response?.data?.error || "I encountered an error while trying to process your request. Please try again.";
+      const errorMessage =
+        error.response?.data?.error ||
+        "I encountered an error while trying to process your request. Please try again.";
       toast.error(errorMessage);
     } finally {
       setIsTyping(false);

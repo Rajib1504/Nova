@@ -26,17 +26,43 @@ export const GmailCompose: React.FC<GmailComposeProps> = ({ onClose, initialTo =
   const { isNovaControlled, isGhostTyping, novaDraft, finishGhostTyping, confirmDraft } = useNovaContext();
 
   React.useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    let isMounted = true;
+
     if (isNovaControlled && novaDraft) {
       setTo(novaDraft.to);
       setSubject(novaDraft.subject);
-      setBody(novaDraft.body);
       
       if (isGhostTyping) {
-        // Simulate Nova typing the email
-        setTimeout(() => finishGhostTyping(), 2000);
+        setBody("");
+        const fullText = novaDraft.body;
+        let i = 0;
+        
+        const typeChar = () => {
+          if (!isMounted) return;
+          if (i < fullText.length) {
+            setBody(fullText.substring(0, i + 1));
+            i++;
+            // Add a slight random variance for realistic typing speed
+            const delay = Math.random() * 15 + 10; 
+            timeoutId = setTimeout(typeChar, delay);
+          } else {
+            finishGhostTyping();
+          }
+        };
+        
+        // Start typing after a tiny pause to let the modal animate in
+        timeoutId = setTimeout(typeChar, 300);
+      } else {
+        setBody(novaDraft.body);
       }
     }
-  }, [isNovaControlled]); // Intentionally only run when Nova takes control
+
+    return () => {
+      isMounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isNovaControlled, novaDraft]); // Intentionally omitting isGhostTyping to avoid interrupting the effect
 
   const handleSend = async () => {
     if (!to || !body) return;
