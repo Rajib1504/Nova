@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Clock, Inbox } from "lucide-react";
 import { TabsContent } from "@/components/ui/tabs";
@@ -17,6 +17,9 @@ interface GmailContentProps {
   isConnected: boolean;
   onReply: (to: string, subject: string) => void;
   onRefresh: () => void;
+  focusedEmailIndex: number;
+  openTrigger: number;
+  isActiveTab: boolean;
 }
 
 // Format a JS Date object into a readable time string
@@ -44,9 +47,11 @@ const getAvatarText = (fromStr: string) => {
 
 import { BlobButton } from "../../BlobButton";
 
-export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmails, loading, syncing, onSync, isConnected, onReply, onRefresh }) => {
+export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmails, loading, syncing, onSync, isConnected, onReply, onRefresh, focusedEmailIndex, openTrigger, isActiveTab }) => {
   const [viewingThread, setViewingThread] = useState<EmailThread | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  // Ref map for auto-scrolling to the focused email
+  const emailRowRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
   const handleConnectClick = () => {
     setIsConnecting(true);
@@ -84,6 +89,26 @@ export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmail
   // Sort overall threads descending by latest message
   groupedThreads.sort((a, b) => b.latestDate - a.latestDate);
 
+  // Auto-scroll the focused email row into view when keyboard navigates
+  React.useEffect(() => {
+    if (focusedEmailIndex < 0 || !isActiveTab) return;
+    const el = emailRowRefs.current.get(focusedEmailIndex);
+    if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [focusedEmailIndex, isActiveTab]);
+
+  // Open the focused thread when Enter is pressed (openTrigger bumps)
+  React.useEffect(() => {
+    if (openTrigger <= 0 || !isActiveTab) return;
+    const effectiveIndex = Math.min(
+      Math.max(0, focusedEmailIndex),
+      groupedThreads.length - 1
+    );
+    if (groupedThreads[effectiveIndex]) {
+      setViewingThread(groupedThreads[effectiveIndex]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openTrigger]);
+
   return (
     <TabsContent value={label} className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 m-0 data-[state=inactive]:hidden focus-visible:outline-none relative">
       
@@ -119,16 +144,24 @@ export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmail
               <p className="text-sm">There are no emails matching this view.</p>
             </div>
           ) : (
-            groupedThreads.map((thread) => {
+            groupedThreads.map((thread, idx) => {
               // Determine if the thread is unread based on the first email's labels
               const isUnread = thread.emails[0].labels?.includes("UNREAD");
+              const isFocused = isActiveTab && focusedEmailIndex === idx;
 
               return (
-                <div key={thread.threadId} className="flex flex-col shrink-0">
+                <div
+                  key={thread.threadId}
+                  className="flex flex-col shrink-0"
+                  ref={(el) => {
+                    if (el) emailRowRefs.current.set(idx, el);
+                    else emailRowRefs.current.delete(idx);
+                  }}
+                >
                   <motion.div
                     whileHover={{ y: -2 }}
                     onClick={() => setViewingThread(thread)}
-                    className={`relative p-4 rounded-2xl glass ${isUnread ? 'bg-white/80 dark:bg-[#2A2D35]' : 'bg-white/40 dark:bg-[#23232A]/50'} border border-white/80 dark:border-white/10 shadow-sm cursor-pointer hover:shadow-md transition-all group z-10`}
+                    className={`relative p-4 rounded-2xl glass ${isUnread ? 'bg-white/80 dark:bg-[#2A2D35]' : 'bg-white/40 dark:bg-[#23232A]/50'} border ${isFocused ? 'border-[#FF9494]/70 ring-2 ring-[#FF9494]/40 shadow-md' : 'border-white/80 dark:border-white/10 shadow-sm'} cursor-pointer hover:shadow-md transition-all group z-10`}
                   >
                     {thread.isPriority && (
                       <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-12 bg-[#FF9494] rounded-r-full shadow-[0_0_10px_rgba(255,148,148,0.5)]" />

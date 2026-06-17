@@ -12,7 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export const TopHeader = ({ theme, toggleTheme, searchQuery, setSearchQuery }: { theme: string, toggleTheme: () => void, searchQuery: string, setSearchQuery: (q: string) => void }) => {
+export const TopHeader = ({ theme, toggleTheme, searchQuery, setSearchQuery, searchInputRef }: { theme: string, toggleTheme: () => void, searchQuery: string, setSearchQuery: (q: string) => void, searchInputRef?: React.RefObject<HTMLInputElement> }) => {
   const { data: session } = useSession();
   const userName = session?.user?.name || "Nova User";
   const userImage = session?.user?.image || "https://i.pravatar.cc/150?img=11";
@@ -34,6 +34,8 @@ export const TopHeader = ({ theme, toggleTheme, searchQuery, setSearchQuery }: {
             <Search className="w-5 h-5 text-gray-400 dark:text-gray-500" />
           </div>
           <input
+            id="nova-search-input"
+            ref={searchInputRef}
             type="text"
             placeholder="Search workspace..."
             value={searchQuery}

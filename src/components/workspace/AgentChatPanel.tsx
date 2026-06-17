@@ -23,7 +23,11 @@ const INITIAL_MESSAGES: Message[] = [
   },
 ];
 
-export const AgentChatPanel = () => {
+interface AgentChatPanelProps {
+  inputRef?: React.RefObject<HTMLInputElement>;
+}
+
+export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [inputValue, setInputValue] = useState("");
   const [activeDraft, setActiveDraft] = useState<any>(null);
@@ -338,6 +342,7 @@ export const AgentChatPanel = () => {
           </button>
 
           <input
+            ref={inputRef}
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}

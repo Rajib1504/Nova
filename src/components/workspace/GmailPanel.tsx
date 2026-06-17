@@ -12,20 +12,39 @@ interface GmailPanelProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   searchQuery?: string;
+  // Lifted compose state (controlled by WorkspaceLayout for keyboard shortcuts)
+  isComposing: boolean;
+  setIsComposing: (v: boolean) => void;
+  replyTo: string;
+  setReplyTo: (v: string) => void;
+  replySubject: string;
+  setReplySubject: (v: string) => void;
+  // Keyboard navigation
+  focusedEmailIndex: number;
+  openTrigger: number;
+  activeTab: string;
+  setActiveTab: (v: string) => void;
 }
 
 export const GmailPanel: React.FC<GmailPanelProps> = ({
   isCollapsed,
   onToggleCollapse,
   searchQuery = "",
+  isComposing,
+  setIsComposing,
+  replyTo,
+  setReplyTo,
+  replySubject,
+  setReplySubject,
+  focusedEmailIndex,
+  openTrigger,
+  activeTab,
+  setActiveTab,
 }) => {
   const [emails, setEmails] = useState<EmailMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [isComposing, setIsComposing] = useState(false);
-  const [replyTo, setReplyTo] = useState("");
-  const [replySubject, setReplySubject] = useState("");
   const { isNovaControlled, clearNovaDraft } = useNovaContext();
 
   const handleCompose = () => {
@@ -160,7 +179,7 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
     <div className="flex flex-col h-full w-full relative">
       {/* We completely removed the top header. The toggle button is now inside the Sidebar. */}
 
-      <Tabs defaultValue="Inbox" className="flex-1 flex overflow-hidden">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex overflow-hidden">
         <GmailSidebar
           isCollapsed={isCollapsed}
           onToggleCollapse={onToggleCollapse}
@@ -181,6 +200,9 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
               isConnected={isConnected}
               onReply={handleReply}
               onRefresh={fetchEmails}
+              focusedEmailIndex={focusedEmailIndex}
+              openTrigger={openTrigger}
+              isActiveTab={activeTab === item.label}
             />
           ))}
         </>

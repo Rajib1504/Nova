@@ -34,6 +34,11 @@ import { CalendarEvent } from "@/types/models";
 interface CalendarPanelProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  // Controlled by WorkspaceLayout for keyboard shortcuts
+  viewMode: "day" | "week";
+  setViewMode: (v: "day" | "week") => void;
+  baseDate: Date;
+  setBaseDate: (d: Date) => void;
 }
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
@@ -41,6 +46,10 @@ const HOURS = Array.from({ length: 24 }, (_, i) => i);
 export const CalendarPanel: React.FC<CalendarPanelProps> = ({
   isCollapsed,
   onToggleCollapse,
+  viewMode,
+  setViewMode,
+  baseDate,
+  setBaseDate,
 }) => {
   const { data: session } = useSession();
   const calendarOwnerName = session?.user?.name || "Me";
@@ -53,8 +62,6 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
   const [errorToast, setErrorToast] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
 
-  const [baseDate, setBaseDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<"day" | "week">("week");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState({
