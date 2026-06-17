@@ -92,7 +92,9 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
               <DropdownMenuTrigger className="focus:outline-none">
                 <div className="flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors cursor-pointer">
                   <Image
-                    src={session.user?.image || "https://i.pravatar.cc/150?img=11"}
+                    src={
+                      session.user?.image || "https://i.pravatar.cc/150?img=11"
+                    }
                     alt="User"
                     width={32}
                     height={32}
@@ -103,8 +105,14 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
                   </span>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-[#FFF5E4] dark:bg-[#1A1D23] border border-black/10 dark:border-white/20 shadow-lg backdrop-blur-3xl rounded-xl">
-                <DropdownMenuItem className="cursor-pointer font-medium hover:bg-black/5 dark:hover:bg-white/10 p-2.5 rounded-lg focus:bg-black/5 dark:focus:bg-white/10" onClick={() => window.location.href = '/dashboard'}>
+              <DropdownMenuContent
+                align="end"
+                className="w-48 bg-[#FFF5E4] dark:bg-[#1A1D23] border border-black/10 dark:border-white/20 shadow-lg backdrop-blur-3xl rounded-xl"
+              >
+                <DropdownMenuItem
+                  className="cursor-pointer font-medium hover:bg-black/5 dark:hover:bg-white/10 p-2.5 rounded-lg focus:bg-black/5 dark:focus:bg-white/10"
+                  onClick={() => (window.location.href = "/dashboard")}
+                >
                   Dashboard
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-black/10 dark:bg-white/10 my-1" />
@@ -123,6 +131,7 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
                 blobColor="#FF7B7B"
                 textColor="#FF7B7B"
                 hoverTextColor="#FFFFFF"
+                size="md"
               >
                 <span>Initialize</span>
                 <motion.svg
