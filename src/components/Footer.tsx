@@ -1,15 +1,25 @@
 "use client";
 import React from "react";
 import { Mail, Hexagon } from "lucide-react";
+import { FaGithub, FaLinkedin, FaXTwitter } from "react-icons/fa6";
 
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const links = {
-    Product: ["Neural Core", "Telemetry", "Protocol Alignment", "Pricing"],
-    Company: ["About Nova", "Careers", "Blog", "Contact"],
-    Resources: ["Documentation", "API Reference", "Community", "Status"],
-    Legal: ["Privacy Policy", "Terms of Service", "Cookie Policy", "Security"],
+    Product: [
+      { label: "Neural Core", href: "/#home" },
+      { label: "Features", href: "/#features" },
+      { label: "Pricing", href: "/#pricing" },
+    ],
+    Company: [
+      { label: "About Nova", href: "/about" },
+      { label: "Contact", href: "mailto:hello@nova.ai" },
+    ],
+    Legal: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+    ],
   };
 
   return (
@@ -33,21 +43,36 @@ export const Footer = () => {
             </p>
 
             {/* Social Icons */}
-            <div className="flex items-center gap-4">
-              {[Mail].map((Icon, i) => (
-                <a
-                  key={i}
-                  href="#"
-                  className="w-10 h-10 rounded-full glass bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 hover:text-[#FF9494] hover:border-[#FF9494]/30 hover:bg-[#FFE3E1] dark:hover:bg-[#FF9494]/10 transition-all duration-300 shadow-sm"
-                >
-                  <Icon className="w-4 h-4" />
-                </a>
-              ))}
+            <div className="flex items-center gap-4 mt-2">
+              <a
+                href="https://x.com/rajib_dev1504"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full glass bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 hover:text-black dark:hover:text-white hover:border-black/30 dark:hover:border-white/30 hover:bg-black/5 dark:hover:bg-white/10 transition-all duration-300 shadow-sm"
+              >
+                <FaXTwitter className="w-4 h-4" />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/dev-rajib/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full glass bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 hover:text-[#0A66C2] hover:border-[#0A66C2]/30 hover:bg-[#0A66C2]/10 transition-all duration-300 shadow-sm"
+              >
+                <FaLinkedin className="w-4 h-4" />
+              </a>
+              <a
+                href="https://github.com/Rajib1504"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full glass bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-500 hover:text-[#333] dark:hover:text-white hover:border-[#333]/30 dark:hover:border-white/30 hover:bg-[#333]/10 dark:hover:bg-white/10 transition-all duration-300 shadow-sm"
+              >
+                <FaGithub className="w-4 h-4" />
+              </a>
             </div>
           </div>
 
           {/* Links Columns */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-16">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-8 lg:gap-16">
             {Object.entries(links).map(([title, items], idx) => (
               <div key={idx} className="flex flex-col">
                 <h4 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider mb-6">
@@ -57,10 +82,10 @@ export const Footer = () => {
                   {items.map((item, itemIdx) => (
                     <li key={itemIdx}>
                       <a
-                        href="#"
+                        href={item.href}
                         className="text-gray-500 dark:text-gray-400 hover:text-[#FF9494] dark:hover:text-[#FF9494] font-medium transition-colors duration-200"
                       >
-                        {item}
+                        {item.label}
                       </a>
                     </li>
                   ))}

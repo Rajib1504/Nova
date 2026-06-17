@@ -5,6 +5,13 @@ import Image from "next/image";
 import { MoonStar, Sun } from "lucide-react";
 import { BlobButton } from "./BlobButton";
 import { useSession, signIn, signOut } from "next-auth/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface NavbarProps {
   theme: string;
@@ -45,13 +52,18 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
         </div>
 
         <div className="hidden md:flex space-x-10 text-[15px] font-medium tracking-wide">
-          {["Product", "Features", "Pricing", "Blog"].map((item) => (
+          {[
+            { name: "Product", href: "/#home" },
+            { name: "Features", href: "/#features" },
+            { name: "Pricing", href: "/#pricing" },
+            { name: "About", href: "/about" },
+          ].map((item) => (
             <a
-              key={item}
-              href={`#${item.toLowerCase()}`}
+              key={item.name}
+              href={item.href}
               className="interactive relative group text-gray-600 dark:text-gray-300 hover:text-[var(--foreground)] dark:hover:text-white transition-colors"
             >
-              {item}
+              {item.name}
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[var(--accent)] transition-all duration-300 ease-out group-hover:w-full"></span>
             </a>
           ))}
@@ -76,37 +88,34 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
           </button>
 
           {session ? (
-            <div className="flex items-center gap-4">
-              <a href="/dashboard">
-                <BlobButton
-                  className="interactive"
-                  blobColor="#FF7B7B"
-                  textColor="#FF7B7B"
-                  hoverTextColor="#FFFFFF"
+            <DropdownMenu>
+              <DropdownMenuTrigger className="focus:outline-none">
+                <div className="flex items-center gap-2 hover:bg-black/5 dark:hover:bg-white/10 px-3 py-1.5 rounded-full transition-colors cursor-pointer">
+                  <Image
+                    src={session.user?.image || "https://i.pravatar.cc/150?img=11"}
+                    alt="User"
+                    width={32}
+                    height={32}
+                    className="rounded-full shadow-sm"
+                  />
+                  <span className="text-sm font-semibold text-[var(--foreground)] hidden md:block">
+                    {session.user?.name || "Nova User"}
+                  </span>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-[#FFF5E4] dark:bg-[#1A1D23] border border-black/10 dark:border-white/20 shadow-lg backdrop-blur-3xl rounded-xl">
+                <DropdownMenuItem asChild className="cursor-pointer font-medium hover:bg-black/5 dark:hover:bg-white/10 p-2.5 rounded-lg focus:bg-black/5 dark:focus:bg-white/10">
+                  <a href="/dashboard">Dashboard</a>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-black/10 dark:bg-white/10 my-1" />
+                <DropdownMenuItem
+                  onClick={() => signOut()}
+                  className="cursor-pointer text-red-500 font-medium hover:bg-red-500/10 dark:hover:bg-red-500/20 p-2.5 rounded-lg focus:bg-red-500/10 dark:focus:bg-red-500/20 focus:text-red-500"
                 >
-                  <span>Dashboard</span>
-                  <motion.svg
-                    className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M14 5l7 7m0 0l-7 7m7-7H3"
-                    />
-                  </motion.svg>
-                </BlobButton>
-              </a>
-              <button
-                onClick={() => signOut()}
-                className="text-sm font-medium text-gray-500 hover:text-red-500 transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : (
             <div onClick={() => signIn("google")}>
               <BlobButton

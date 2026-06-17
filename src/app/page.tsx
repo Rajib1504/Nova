@@ -44,14 +44,20 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen">
       <Navbar theme={theme} toggleTheme={toggleTheme} />
 
-      <Hero />
+      <div id="home">
+        <Hero />
+      </div>
       <SocialProof />
-      <FeatureOne />
-      <FeatureTwo />
-      <FeatureThree />
+      <div id="features">
+        <FeatureOne />
+        <FeatureTwo />
+        <FeatureThree />
+      </div>
       <Stats />
       <Testimonials />
-      <Pricing />
+      <div id="pricing">
+        <Pricing />
+      </div>
       <FAQ />
       <Footer />
     </div>

@@ -128,15 +128,17 @@ export const Hero = () => {
           transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="mt-10 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 relative z-20"
         >
-          <BlobButton
-            className="interactive"
-            blobColor="#FF7B7B"
-            textColor="#FF7B7B"
-            hoverTextColor="#FFFFFF"
-          >
-            <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-            ✦ Experience the Future of Work
-          </BlobButton>
+          <a href="/dashboard">
+            <BlobButton
+              className="interactive"
+              blobColor="#FF7B7B"
+              textColor="#FF7B7B"
+              hoverTextColor="#FFFFFF"
+            >
+              <Sparkles className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              ✦ Experience the Future of Work
+            </BlobButton>
+          </a>
         </motion.div>
       </motion.div>
 
