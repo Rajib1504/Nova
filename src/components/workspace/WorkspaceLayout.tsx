@@ -99,7 +99,7 @@ export const WorkspaceLayout = () => {
 
   // ─── Refs for Search & Agent Input Focus ─────────────────
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const agentInputRef = useRef<HTMLInputElement>(null);
+  const agentInputRef = useRef<HTMLTextAreaElement>(null);
 
   // ─── Global Keyboard Shortcuts ───────────────────────────
   useKeyboardShortcuts([

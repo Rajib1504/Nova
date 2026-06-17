@@ -320,6 +320,7 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
                   onClick={() => setViewMode("week")}
                   className={`px-3 py-1 text-xs font-bold rounded-md transition-colors ${viewMode === "week" ? "bg-white dark:bg-[#23232A] text-gray-900 dark:text-white shadow-sm" : "text-gray-500 hover:text-gray-900 dark:hover:text-white"}`}
                 >
+                  Week
                 </button>
               </div>
             </div>
@@ -444,7 +445,8 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
                         Syncing Calendar Data...
                       </h3>
                       <p className="text-sm text-gray-500">
-                        Please wait while we securely fetch your events from Google.
+                        Please wait while we securely fetch your events from
+                        Google.
                       </p>
                     </div>
                   ) : (

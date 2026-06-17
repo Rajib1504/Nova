@@ -24,10 +24,14 @@ const INITIAL_MESSAGES: Message[] = [
 ];
 
 interface AgentChatPanelProps {
-  inputRef?: React.RefObject<HTMLInputElement | null>;
+  inputRef?: React.RefObject<HTMLTextAreaElement | null>;
 }
 
-export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
+export const AgentChatPanel = ({
+  inputRef: externalInputRef,
+}: AgentChatPanelProps = {}) => {
+  const localInputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = externalInputRef || localInputRef;
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [inputValue, setInputValue] = useState("");
   const [activeDraft, setActiveDraft] = useState<any>(null);
@@ -36,12 +40,57 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   // Holds the AbortController for the current in-flight agent request
   const abortControllerRef = useRef<AbortController | null>(null);
+  const recognitionRef = useRef<any>(null);
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      recognitionRef.current?.stop();
+      setIsRecording(false);
+    } else {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        toast.error(
+          "Voice input is only supported in Chrome, Edge, and Safari.",
+        );
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = true;
+      recognition.continuous = true;
+
+      recognition.onresult = (event: any) => {
+        let transcript = "";
+        for (let i = 0; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        setInputValue(transcript);
+
+        // Auto-resize the textarea while speaking
+        if (inputRef && inputRef.current) {
+          inputRef.current.style.height = "auto";
+          inputRef.current.style.height =
+            Math.min(inputRef.current.scrollHeight, 120) + "px";
+        }
+      };
+
+      recognition.onerror = () => setIsRecording(false);
+      recognition.onend = () => setIsRecording(false);
+
+      recognition.start();
+      recognitionRef.current = recognition;
+      setIsRecording(true);
+    }
+  };
 
   const { data: session } = useSession();
   const tenantId = session?.user?.id;
   const userName = session?.user?.name || "User";
   const userImage = session?.user?.image || "https://i.pravatar.cc/150?img=11";
-  
+
   const router = useRouter();
   const { startNovaDraft, confirmedDraft, clearConfirmedDraft } =
     useNovaContext();
@@ -69,7 +118,11 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
     setIsTyping(true);
 
     // Add system message to the state so it is bundled in history, but NOT rendered in UI
-    const sysMsg: Message = { id: Date.now().toString(), sender: "system", text: prompt };
+    const sysMsg: Message = {
+      id: Date.now().toString(),
+      sender: "system",
+      text: prompt,
+    };
     setMessages((prev) => [...prev, sysMsg]);
 
     // Create a fresh AbortController for this request
@@ -77,9 +130,13 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
     abortControllerRef.current = controller;
 
     try {
-      const response = await axios.post("/api/agent", { prompt, tenantId }, {
-        signal: controller.signal,
-      });
+      const response = await axios.post(
+        "/api/agent",
+        { prompt, tenantId },
+        {
+          signal: controller.signal,
+        },
+      );
       let aiText = response.data.message || "Action completed.";
 
       setMessages((prev) => [
@@ -92,12 +149,17 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
       ]);
     } catch (error: any) {
       // If the request was aborted by the user, don't show an error toast
-      if (axios.isCancel(error) || error.name === "CanceledError" || error.code === "ERR_CANCELED") {
+      if (
+        axios.isCancel(error) ||
+        error.name === "CanceledError" ||
+        error.code === "ERR_CANCELED"
+      ) {
         console.log("[Nova] Agent request cancelled by user.");
         return;
       }
       console.error("Agent execution error:", error);
-      const errorMessage = error.response?.data?.error || "I encountered an error.";
+      const errorMessage =
+        error.response?.data?.error || "I encountered an error.";
       toast.error(errorMessage);
     } finally {
       setIsTyping(false);
@@ -131,13 +193,17 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
 
       const contextualPrompt = `[CHAT HISTORY]\n${recentHistory}\n[NEW COMMAND]\nUSER: ${userText}`;
 
-      const response = await axios.post("/api/agent", {
-        prompt: contextualPrompt,
-        tenantId,
-        draftPayload: activeDraft
-      }, {
-        signal: controller.signal,
-      });
+      const response = await axios.post(
+        "/api/agent",
+        {
+          prompt: contextualPrompt,
+          tenantId,
+          draftPayload: activeDraft,
+        },
+        {
+          signal: controller.signal,
+        },
+      );
 
       // TRIGGER SYNC: If the AI just executed a confirmed draft, force a background sync & UI refresh
       if (activeDraft) {
@@ -156,11 +222,16 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
         /<UI_COMMAND\s+type="COMPOSE"\s+to="([^"]*)"\s+subject="([^"]*)"\s+threadId="([^"]*)"\s+body="([\s\S]*?)"\s*\/>/;
       const match = aiText.match(composeRegex);
       if (match) {
-        const parsedBody = match[4].replace(/\\n/g, '\n');
-        startNovaDraft({ to: match[1], subject: match[2], threadId: match[3], body: parsedBody });
+        const parsedBody = match[4].replace(/\\n/g, "\n");
+        startNovaDraft({
+          to: match[1],
+          subject: match[2],
+          threadId: match[3],
+          body: parsedBody,
+        });
         aiText = aiText.replace(composeRegex, "").trim();
         if (!aiText) {
-          aiText = `I have opened the compose window and drafted the email:<br/><br/><strong>To:</strong> ${match[1]}<br/><strong>Subject:</strong> ${match[2]}<br/><br/><div style="padding-left:10px; border-left: 2px solid #FF9494; color: gray;">${parsedBody.replace(/\n/g, '<br/>')}</div><br/>You can edit it now. Once you're ready, click <strong>Confirm Draft</strong>.`;
+          aiText = `I have opened the compose window and drafted the email:<br/><br/><strong>To:</strong> ${match[1]}<br/><strong>Subject:</strong> ${match[2]}<br/><br/><div style="padding-left:10px; border-left: 2px solid #FF9494; color: gray;">${parsedBody.replace(/\n/g, "<br/>")}</div><br/>You can edit it now. Once you're ready, click <strong>Confirm Draft</strong>.`;
         }
       }
 
@@ -174,7 +245,11 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
       ]);
     } catch (error: any) {
       // If the request was aborted by the user, don't show an error toast
-      if (axios.isCancel(error) || error.name === "CanceledError" || error.code === "ERR_CANCELED") {
+      if (
+        axios.isCancel(error) ||
+        error.name === "CanceledError" ||
+        error.code === "ERR_CANCELED"
+      ) {
         console.log("[Nova] Agent request cancelled by user.");
         return;
       }
@@ -217,55 +292,57 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
       {/* Chat Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-6 scroll-smooth">
         <AnimatePresence initial={false}>
-          {messages.filter(m => m.sender !== "system").map((msg) => {
-            const isUser = msg.sender === "user";
-            return (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                className={`flex items-end gap-2 max-w-[85%] ${isUser ? "self-end" : "self-start"}`}
-              >
-                {!isUser && (
-                  <div className="w-6 h-6 rounded-md  flex items-center justify-center shrink-0 mb-1">
-                    <Image
-                      src="/logo.svg"
-                      alt="Nova"
-                      width={100}
-                      height={100}
-                      style={{ width: "auto", height: "auto" }}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
+          {messages
+            .filter((m) => m.sender !== "system")
+            .map((msg) => {
+              const isUser = msg.sender === "user";
+              return (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                  className={`flex items-end gap-2 max-w-[85%] ${isUser ? "self-end" : "self-start"}`}
+                >
+                  {!isUser && (
+                    <div className="w-6 h-6 rounded-md  flex items-center justify-center shrink-0 mb-1">
+                      <Image
+                        src="/logo.svg"
+                        alt="Nova"
+                        width={100}
+                        height={100}
+                        style={{ width: "auto", height: "auto" }}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
 
-                <div
-                  className={`p-4 rounded-3xl text-sm leading-relaxed ${
-                    isUser
-                      ? "bg-[#FF9494] text-white rounded-br-sm shadow-md"
-                      : "glass bg-white/70 dark:bg-[#23232A]/80 border border-white/60 dark:border-white/10 text-gray-800 dark:text-gray-200 rounded-bl-sm shadow-sm"
-                  }`}
-                  dangerouslySetInnerHTML={{
-                    __html: msg.text.replace(
-                      /\*\*(.*?)\*\*/g,
-                      "<strong>$1</strong>",
-                    ),
-                  }}
-                />
+                  <div
+                    className={`p-4 rounded-3xl text-sm leading-relaxed ${
+                      isUser
+                        ? "bg-[#FF9494] text-white rounded-br-sm shadow-md"
+                        : "glass bg-white/70 dark:bg-[#23232A]/80 border border-white/60 dark:border-white/10 text-gray-800 dark:text-gray-200 rounded-bl-sm shadow-sm"
+                    }`}
+                    dangerouslySetInnerHTML={{
+                      __html: msg.text.replace(
+                        /\*\*(.*?)\*\*/g,
+                        "<strong>$1</strong>",
+                      ),
+                    }}
+                  />
 
-                {isUser && (
-                  <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mb-1 border border-[#FF9494]/30 shadow-sm">
-                    <img
-                      src={userImage}
-                      alt={userName}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-              </motion.div>
-            );
-          })}
+                  {isUser && (
+                    <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mb-1 border border-[#FF9494]/30 shadow-sm">
+                      <img
+                        src={userImage}
+                        alt={userName}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                </motion.div>
+              );
+            })}
 
           {isTyping && (
             <motion.div
@@ -309,9 +386,9 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
 
       {/* Input Area */}
       <div className="p-4 shrink-0">
-        <div className="relative w-full rounded-full glass bg-white/60 dark:bg-[#23232A]/80 border border-white/80 dark:border-white/10 shadow-sm p-1.5 flex items-center transition-all focus-within:ring-2 focus-within:ring-[#FF9494]/50 focus-within:bg-white/90 dark:focus-within:bg-[#2A2D35]/90">
+        <div className="relative w-full rounded-2xl glass bg-white/60 dark:bg-[#23232A]/80 border border-white/80 dark:border-white/10 shadow-sm p-1.5 flex items-end transition-all focus-within:ring-2 focus-within:ring-[#FF9494]/50 focus-within:bg-white/90 dark:focus-within:bg-[#2A2D35]/90">
           <button
-            onClick={() => setIsRecording(!isRecording)}
+            onClick={toggleRecording}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
               isRecording
                 ? "bg-[#FFE3E1] dark:bg-[#FF9494]/20 text-[#FF9494]"
@@ -341,14 +418,31 @@ export const AgentChatPanel = ({ inputRef }: AgentChatPanelProps = {}) => {
             )}
           </button>
 
-          <input
+          <textarea
             ref={inputRef}
-            type="text"
+            rows={1}
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Message Nova Core..."
-            className="flex-1 h-10 bg-transparent px-3 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none"
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              e.target.style.height = "auto";
+              e.target.style.height =
+                Math.min(e.target.scrollHeight, 120) + "px";
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+                // Reset height
+                if (inputRef && inputRef.current) {
+                  inputRef.current.style.height = "40px";
+                }
+              } else {
+                handleKeyDown(e);
+              }
+            }}
+            placeholder="Message Nova Core... (or use voice)"
+            className="flex-1 bg-transparent px-3 py-2.5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none resize-none overflow-y-auto mb-[-4px]"
+            style={{ minHeight: "40px", maxHeight: "120px", lineHeight: "1.5" }}
           />
 
           <AnimatePresence mode="popLayout">
