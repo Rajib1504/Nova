@@ -6,6 +6,7 @@ import Image from "next/image";
 import axios from "axios";
 import { useSession } from "next-auth/react";
 import { useNovaContext } from "@/context/NovaContext";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 interface Message {
@@ -32,6 +33,7 @@ export const AgentChatPanel = () => {
 
   const { data: session } = useSession();
   const tenantId = session?.user?.id;
+  const router = useRouter();
   const { startNovaDraft, confirmedDraft, clearConfirmedDraft } =
     useNovaContext();
 
@@ -46,7 +48,7 @@ export const AgentChatPanel = () => {
   useEffect(() => {
     if (confirmedDraft) {
       setActiveDraft(confirmedDraft);
-      const systemMessage = `[System: Final draft ready for review. To: ${confirmedDraft.to}, Subject: ${confirmedDraft.subject}, Body: ${confirmedDraft.body}. Please present this to the user and ask for confirmation to send.]`;
+      const systemMessage = `[System: Final draft ready for review. To: ${confirmedDraft.to}, Subject: ${confirmedDraft.subject}, ThreadId: ${confirmedDraft.threadId || "NONE"}, Body: ${confirmedDraft.body}. Please present this to the user and ask for confirmation to send.]`;
       // Call the API silently
       sendSilentSystemMessage(systemMessage);
       clearConfirmedDraft();
@@ -111,16 +113,28 @@ export const AgentChatPanel = () => {
         draftPayload: activeDraft
       });
 
+      // TRIGGER SYNC: If the AI just executed a confirmed draft, force a background sync & UI refresh
+      if (activeDraft) {
+        try {
+          await axios.get("/api/emails/sync");
+        } catch (syncErr) {
+          console.error("Sync failed:", syncErr);
+        }
+        router.refresh();
+        setActiveDraft(null); // Clear memory so we don't re-trigger sync on the next chat message
+      }
+
       let aiText = response.data.message || "Action completed.";
 
       const composeRegex =
-        /<UI_COMMAND\s+type="COMPOSE"\s+to="([^"]*)"\s+subject="([^"]*)"\s+body="([\s\S]*?)"\s*\/>/;
+        /<UI_COMMAND\s+type="COMPOSE"\s+to="([^"]*)"\s+subject="([^"]*)"\s+threadId="([^"]*)"\s+body="([\s\S]*?)"\s*\/>/;
       const match = aiText.match(composeRegex);
       if (match) {
-        startNovaDraft({ to: match[1], subject: match[2], body: match[3] });
+        const parsedBody = match[4].replace(/\\n/g, '\n');
+        startNovaDraft({ to: match[1], subject: match[2], threadId: match[3], body: parsedBody });
         aiText = aiText.replace(composeRegex, "").trim();
         if (!aiText) {
-          aiText = `I have opened the compose window and drafted the email:<br/><br/><strong>To:</strong> ${match[1]}<br/><strong>Subject:</strong> ${match[2]}<br/><br/><div style="padding-left:10px; border-left: 2px solid #FF9494; color: gray;">${match[3].replace(/\n/g, '<br/>')}</div><br/>You can edit it now. Once you're ready, click <strong>Confirm Draft</strong>.`;
+          aiText = `I have opened the compose window and drafted the email:<br/><br/><strong>To:</strong> ${match[1]}<br/><strong>Subject:</strong> ${match[2]}<br/><br/><div style="padding-left:10px; border-left: 2px solid #FF9494; color: gray;">${parsedBody.replace(/\n/g, '<br/>')}</div><br/>You can edit it now. Once you're ready, click <strong>Confirm Draft</strong>.`;
         }
       }
 

@@ -6,6 +6,7 @@ export interface NovaDraft {
   to: string;
   subject: string;
   body: string;
+  threadId?: string;
 }
 
 interface NovaContextType {

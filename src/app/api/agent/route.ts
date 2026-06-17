@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
     let finalPrompt = prompt;
     if (draftPayload) {
-      finalPrompt += `\n\n[CRITICAL MEMORY PAYLOAD]\nThe user has finalized an email draft. The exact content is:\nTo: ${draftPayload.to}\nSubject: ${draftPayload.subject}\nBody: ${draftPayload.body}\n\nWhen you use the Gmail tool to send the email, you MUST use exactly these parameters.`;
+      finalPrompt += `\n\n[CRITICAL MEMORY PAYLOAD]\nThe user has finalized an email draft. The exact content is:\nTo: ${draftPayload.to}\nSubject: ${draftPayload.subject}\nThreadId: ${draftPayload.threadId || 'NONE'}\nBody: ${draftPayload.body}\n\nWhen you use the Gmail tool to send the email, you MUST use exactly these parameters. If ThreadId is not NONE, you must use the reply tool to attach it to that thread.`;
     }
 
     console.log(`\n🤖 [MCP Agent] Received command: "${finalPrompt}" for tenant: ${tenantId}`);
@@ -83,8 +83,8 @@ RESEARCH FIRST (CRITICAL):
 Always use the Gmail tools to read the context of the emails to find names, email addresses, and times before taking action. Never guess an email address or schedule. Use your tools to find the real information.
 
 STATE 1 - DRAFTING:
-When asked to draft, reply, or send an email, you are strictly forbidden from sending emails directly behind the scenes. You MUST output an XML tag so the frontend UI can open a confirmation window. You must fill in the REAL email address, subject, and body based on your research. DO NOT execute any write tools yet. The exact format must be:
-<UI_COMMAND type="COMPOSE" to="[REAL_EMAIL_ADDRESS_FOUND_VIA_TOOLS]" subject="[REAL_SUBJECT]" body="[REAL_BODY]" />
+When asked to draft, reply, or send an email, you are strictly forbidden from sending emails directly behind the scenes. You MUST output an XML tag so the frontend UI can open a confirmation window. You must fill in the REAL email address, subject, and body based on your research. Always sign off the email draft using ${userName}'s name. DO NOT execute any write tools yet. The exact format must be:
+<UI_COMMAND type="COMPOSE" to="[REAL_EMAIL_ADDRESS_FOUND_VIA_TOOLS]" subject="[REAL_SUBJECT]" threadId="[THREAD_ID_IF_REPLY_ELSE_LEAVE_EMPTY]" body="[REAL_BODY]" />
 
 STATE 2 - CONFIRMATION:
 When you see a message starting with "[System: Final draft ready for review...", you MUST ONLY ask the user if they want to send the email (e.g., "Ready to authorize deployment?"). Do not execute anything yet.
