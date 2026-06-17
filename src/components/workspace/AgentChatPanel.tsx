@@ -33,6 +33,9 @@ export const AgentChatPanel = () => {
 
   const { data: session } = useSession();
   const tenantId = session?.user?.id;
+  const userName = session?.user?.name || "User";
+  const userImage = session?.user?.image || "https://i.pravatar.cc/150?img=11";
+  
   const router = useRouter();
   const { startNovaDraft, confirmedDraft, clearConfirmedDraft } =
     useNovaContext();
@@ -225,8 +228,8 @@ export const AgentChatPanel = () => {
                 {isUser && (
                   <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mb-1 border border-[#FF9494]/30 shadow-sm">
                     <img
-                      src="https://i.pravatar.cc/150?img=11"
-                      alt="User"
+                      src={userImage}
+                      alt={userName}
                       className="w-full h-full object-cover"
                     />
                   </div>

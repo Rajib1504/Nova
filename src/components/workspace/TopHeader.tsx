@@ -2,8 +2,12 @@
 import React from "react";
 import { Search, Bell, Sun, Moon } from "lucide-react";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 export const TopHeader = ({ theme, toggleTheme }: { theme: string, toggleTheme: () => void }) => {
+  const { data: session } = useSession();
+  const userName = session?.user?.name || "Nova User";
+  const userImage = session?.user?.image || "https://i.pravatar.cc/150?img=11";
   return (
     <header className="w-full h-20 flex items-center justify-between px-6 bg-[#FFF5E4] dark:bg-[#1A1D23] border-b border-black/5 dark:border-white/5 z-50 shrink-0">
       
@@ -67,10 +71,10 @@ export const TopHeader = ({ theme, toggleTheme }: { theme: string, toggleTheme: 
                         shadow-[4px_4px_8px_#E5DCD0,-4px_-4px_8px_#FFFFFF] 
                         dark:shadow-[4px_4px_8px_#121418,-4px_-4px_8px_#22262e]">
           <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[#FFE3E1] to-[#FF9494] overflow-hidden border-2 border-[#FFF5E4] dark:border-[#1A1D23]">
-             <Image src="https://i.pravatar.cc/150?img=11" alt="Alex Rivera" width={40} height={40} className="w-full h-full object-cover" />
+             <img src={userImage} alt={userName} className="w-full h-full object-cover" />
           </div>
           <span className="font-semibold text-sm pr-4 text-[#2D2A26] dark:text-[#F0EEEC]">
-            Alex Rivera
+            {userName}
           </span>
         </div>
       </div>

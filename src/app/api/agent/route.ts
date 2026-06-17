@@ -50,9 +50,9 @@ export async function POST(req: Request) {
     );
     const usageCount = usageQuery[0].count;
 
-    if (usageCount >= 50) {
+    if (usageCount >= 10) {
       return NextResponse.json({
-        error: "You have reached your free tier limit of 50 Nova executions.",
+        error: "You have reached your free tier limit of 10 Nova executions.",
         type: "RATE_LIMIT"
       }, { status: 429 });
     }
