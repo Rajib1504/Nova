@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
     const userEmails = await db.query.emails.findMany({
       where: eq(emails.userId, tenantId),
       orderBy: [desc(emails.date)],
-      limit: 15,
+      limit: 200, // Increased limit to ensure drafts/sent emails are never pushed out by an influx of inbox emails
       columns: {
         id: true,
         threadId: true,

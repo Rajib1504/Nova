@@ -40,9 +40,9 @@ export async function POST(req: NextRequest) {
         const c = corsair.withTenant(corsairTenantId);
 
         const syncConfigs = [
-          { q: "in:inbox", maxResults: 10 },
+          { q: "in:inbox", maxResults: 15 },
           { q: "in:sent", maxResults: 10 },
-          { q: "in:draft", maxResults: 3 },
+          { q: "in:draft", maxResults: 5 },
           { q: "in:scheduled", maxResults: 2 },
           { q: "is:important", maxResults: 2 },
           { q: "in:snoozed", maxResults: 2 },

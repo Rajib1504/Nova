@@ -4,7 +4,7 @@ import { Search, Bell, Sun, Moon } from "lucide-react";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 
-export const TopHeader = ({ theme, toggleTheme }: { theme: string, toggleTheme: () => void }) => {
+export const TopHeader = ({ theme, toggleTheme, searchQuery, setSearchQuery }: { theme: string, toggleTheme: () => void, searchQuery: string, setSearchQuery: (q: string) => void }) => {
   const { data: session } = useSession();
   const userName = session?.user?.name || "Nova User";
   const userImage = session?.user?.image || "https://i.pravatar.cc/150?img=11";
@@ -28,6 +28,8 @@ export const TopHeader = ({ theme, toggleTheme }: { theme: string, toggleTheme: 
           <input
             type="text"
             placeholder="Search workspace..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-12 pl-12 pr-4 rounded-full bg-[#FFF5E4] dark:bg-[#1A1D23] 
                        text-[#2D2A26] dark:text-[#F0EEEC] placeholder-gray-400 dark:placeholder-gray-500
                        focus:outline-none focus:ring-2 focus:ring-[#FF9494]/50 transition-all

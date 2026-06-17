@@ -33,9 +33,9 @@ export const WorkspaceLayout = () => {
     }
   };
 
-  // Panel States
   const [isLeftCollapsed, setIsLeftCollapsed] = useState(false);
   const [isRightCollapsed, setIsRightCollapsed] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Base widths in percentages
   const [leftWidth, setLeftWidth] = useState(35);
@@ -83,7 +83,7 @@ export const WorkspaceLayout = () => {
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#FFF5E4] dark:bg-[#1A1D23] text-[#2D2A26] dark:text-[#F0EEEC] font-sans transition-colors duration-500">
-      <TopHeader theme={theme} toggleTheme={toggleTheme} />
+      <TopHeader theme={theme} toggleTheme={toggleTheme} searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
       {/* Main Workspace Area */}
       <div ref={containerRef} className="flex-1 flex overflow-hidden relative">
@@ -99,6 +99,7 @@ export const WorkspaceLayout = () => {
           <GmailPanel 
             isCollapsed={isLeftCollapsed} 
             onToggleCollapse={() => setIsLeftCollapsed(!isLeftCollapsed)} 
+            searchQuery={searchQuery}
           />
         </motion.div>
 

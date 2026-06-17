@@ -11,11 +11,13 @@ import { useNovaContext } from "@/context/NovaContext";
 interface GmailPanelProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  searchQuery?: string;
 }
 
 export const GmailPanel: React.FC<GmailPanelProps> = ({
   isCollapsed,
   onToggleCollapse,
+  searchQuery = "",
 }) => {
   const [emails, setEmails] = useState<EmailMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -64,7 +66,7 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
     }
   }, []);
 
-  const handleRestore = async () => {
+  const handleRestore = React.useCallback(async () => {
     setSyncing(true);
     try {
       await api.post("/api/emails/sync", { offset: emails.length });
@@ -75,7 +77,7 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
     } finally {
       setSyncing(false);
     }
-  };
+  }, [emails.length, fetchEmails]);
 
   useEffect(() => {
     let isMounted = true;
@@ -93,43 +95,61 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
     return () => {
       isMounted = false;
     };
-  }, [fetchEmails]); // handleRestore omitted to prevent infinite loop hooks
+  }, [fetchEmails, handleRestore]);
 
   const getFilteredEmails = (label: string) => {
+    let filtered = emails;
     switch (label) {
       case "Inbox":
-        return emails.filter(
+        filtered = emails.filter(
           (e) =>
             e.labels?.includes("INBOX") ||
             (!e.labels?.includes("SENT") &&
               !e.labels?.includes("DRAFT") &&
               !e.labels?.includes("TRASH")),
         );
+        break;
       case "Sent":
-        return emails.filter((e) => e.labels?.includes("SENT"));
+        filtered = emails.filter((e) => e.labels?.includes("SENT"));
+        break;
       case "Drafts":
-        return emails.filter((e) => e.labels?.includes("DRAFT"));
+        filtered = emails.filter((e) => e.labels?.includes("DRAFT"));
+        break;
       case "Important":
-        return emails.filter(
+        filtered = emails.filter(
           (e) =>
             e.labels?.includes("IMPORTANT") ||
             e.priority === "Important" ||
             e.priority === "high" ||
             e.priority === "urgent",
         );
+        break;
       case "Bin":
-        return emails.filter((e) => e.labels?.includes("TRASH"));
+        filtered = emails.filter((e) => e.labels?.includes("TRASH"));
+        break;
       case "Archive":
-        return emails.filter(
+        filtered = emails.filter(
           (e) =>
             !e.labels?.includes("INBOX") &&
             !e.labels?.includes("TRASH") &&
             !e.labels?.includes("DRAFT") &&
             !e.labels?.includes("SENT"),
         );
+        break;
       default:
-        return emails.filter((e) => e.labels?.includes(label.toUpperCase()));
+        filtered = emails.filter((e) => e.labels?.includes(label.toUpperCase()));
+        break;
     }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      filtered = filtered.filter(e => 
+        (e.subject && e.subject.toLowerCase().includes(q)) ||
+        (e.fromAddress && e.fromAddress.toLowerCase().includes(q)) ||
+        (e.snippet && e.snippet.toLowerCase().includes(q))
+      );
+    }
+    return filtered;
   };
 
   const getFilteredCount = (label: string) => {

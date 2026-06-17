@@ -142,43 +142,43 @@ export async function POST(request: NextRequest) {
 
         console.log(`🤖 Webhook triggered fetch for tenant: ${safeTenantId}...`);
 
-        // Fetch the single most recent unread email reliably
+        // Fetch the 5 most recent emails reliably (captures drafts, sent, trash, etc.)
         const listRes = await (c as any).gmail.api.messages.list({
           userId: 'me',
-          q: "is:unread",
-          maxResults: 1
+          maxResults: 5
         });
 
         const messages = listRes?.messages || [];
 
         if (messages.length === 0) {
-          console.log(`🤖 No new unread messages found for tenant ${safeTenantId}.`);
+          console.log(`🤖 No new messages found for tenant ${safeTenantId}.`);
           return;
         }
 
-        const msg = messages[0];
-
         const { processAndStoreEmail } = await import("../../../lib/triage");
 
-        // Fetch full message details
-        const msgRes = await (c as any).gmail.api.messages.get({
-          userId: 'me',
-          id: msg.id,
-          format: 'full'
-        });
+        // Process all 5 recent messages to ensure we catch the one that changed
+        for (const msg of messages) {
+          // Fetch full message details
+          const msgRes = await (c as any).gmail.api.messages.get({
+            userId: 'me',
+            id: msg.id,
+            format: 'full'
+          });
 
-        if (msgRes) {
-          const headers = msgRes.payload?.headers || [];
-          const subject = headers.find((h: any) => h.name.toLowerCase() === 'subject')?.value || "No Subject";
-          const from = headers.find((h: any) => h.name.toLowerCase() === 'from')?.value || "Unknown Sender";
-          const to = headers.find((h: any) => h.name.toLowerCase() === 'to')?.value || "Unknown";
-          const dateStr = headers.find((h: any) => h.name.toLowerCase() === 'date')?.value || new Date().toISOString();
+          if (msgRes) {
+            const headers = msgRes.payload?.headers || [];
+            const subject = headers.find((h: any) => h.name.toLowerCase() === 'subject')?.value || "No Subject";
+            const from = headers.find((h: any) => h.name.toLowerCase() === 'from')?.value || "Unknown Sender";
+            const to = headers.find((h: any) => h.name.toLowerCase() === 'to')?.value || "Unknown";
+            const dateStr = headers.find((h: any) => h.name.toLowerCase() === 'date')?.value || new Date().toISOString();
 
-          const labels = msgRes.labelIds || [];
-          const bodyText = msgRes.snippet || "";
+            const labels = msgRes.labelIds || [];
+            const bodyText = msgRes.snippet || "";
 
-          // Pass to our deterministic triage logic (which uses OpenAI safely for categorization)
-          await processAndStoreEmail(safeTenantId, msg.id, from, to, subject, bodyText, dateStr, labels);
+            // Pass to our deterministic triage logic (which uses OpenAI safely for categorization)
+            await processAndStoreEmail(safeTenantId, msg.id, from, to, subject, bodyText, dateStr, labels);
+          }
         }
 
         console.log(`🤖 Background triage complete!`);

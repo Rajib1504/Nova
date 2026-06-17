@@ -114,14 +114,9 @@ export const GmailContent: React.FC<GmailContentProps> = ({ label, filteredEmail
             <div className="flex-1 flex flex-col items-center justify-center text-gray-500 mt-10">
               <Inbox className="w-12 h-12 mb-4 opacity-50" />
               <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Data is downloading...
+                No emails found
               </h3>
-              <p className="text-sm">We are syncing your {label.toLowerCase()}...</p>
-              <div className="mt-4 flex gap-1">
-                <span className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="w-2 h-2 rounded-full bg-[#FF9494] animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
+              <p className="text-sm">There are no emails matching this view.</p>
             </div>
           ) : (
             groupedThreads.map((thread) => {
