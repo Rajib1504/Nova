@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   X,
   Minus,
   Maximize2,
-  Paperclip,
   Link as LinkIcon,
-  Image as ImageIcon,
   Smile,
   Send,
   Trash2,
@@ -36,6 +34,26 @@ export const GmailCompose: React.FC<GmailComposeProps> = ({
   const [body, setBody] = useState("");
 
   const [isSending, setIsSending] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
+
+  const EMOJI_LIST = [
+    "😊", "😂", "🤣", "❤️", "🔥", "👍", "👏", "🎉",
+    "🙏", "💯", "✨", "🚀", "💪", "🤝", "👋", "😎",
+    "🤔", "👀", "💡", "⚡", "🎯", "✅", "📌", "📎",
+    "📧", "📅", "⏰", "🌟", "💼", "📊", "🔗", "💬",
+  ];
+
+  // Close emoji picker when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+    if (showEmojiPicker) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showEmojiPicker]);
 
   const {
     isNovaControlled,
@@ -231,24 +249,46 @@ export const GmailCompose: React.FC<GmailComposeProps> = ({
 
                 {/* Formatting Tools */}
                 <div className="flex items-center gap-1 ml-4 text-gray-500 dark:text-gray-400">
-                  <button className="p-1.5 hover:bg-black/5 dark:hover:bg-white/10 rounded font-serif font-bold text-sm">
-                    Aa
-                  </button>
-                  <button className="p-1.5 hover:bg-black/5 dark:hover:bg-white/10 rounded">
-                    <Paperclip className="w-4 h-4" />
-                  </button>
                   <button
                     onClick={insertLink}
                     className="p-1.5 hover:bg-black/5 dark:hover:bg-white/10 rounded"
+                    title="Insert Link"
                   >
                     <LinkIcon className="w-4 h-4" />
                   </button>
-                  <button className="p-1.5 hover:bg-black/5 dark:hover:bg-white/10 rounded">
-                    <Smile className="w-4 h-4" />
-                  </button>
-                  <button className="p-1.5 hover:bg-black/5 dark:hover:bg-white/10 rounded">
-                    <ImageIcon className="w-4 h-4" />
-                  </button>
+                  <div className="relative" ref={emojiPickerRef}>
+                    <button
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      className={`p-1.5 rounded transition-colors ${showEmojiPicker ? "bg-[#FF9494]/20 text-[#FF9494]" : "hover:bg-black/5 dark:hover:bg-white/10"}`}
+                      title="Insert Emoji"
+                    >
+                      <Smile className="w-4 h-4" />
+                    </button>
+                    <AnimatePresence>
+                      {showEmojiPicker && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                          transition={{ type: "spring", damping: 25, stiffness: 400 }}
+                          className="absolute bottom-10 left-0 w-[220px] p-2 bg-white dark:bg-[#23232A] rounded-xl shadow-xl border border-gray-200 dark:border-white/10 grid grid-cols-8 gap-0.5 z-50"
+                        >
+                          {EMOJI_LIST.map((emoji) => (
+                            <button
+                              key={emoji}
+                              onClick={() => {
+                                setBody((prev) => prev + emoji);
+                                setShowEmojiPicker(false);
+                              }}
+                              className="w-6 h-6 flex items-center justify-center text-base rounded hover:bg-black/5 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
 
