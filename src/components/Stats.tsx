@@ -8,6 +8,7 @@ import {
   useMotionValue,
 } from "framer-motion";
 import { Text3DReveal } from "./Text3DReveal";
+import { TextBlurReveal } from "./TextBlurReveal";
 
 // Custom hook to animate the number based on whether it is "active"
 const AnimatedNumber = ({
@@ -97,9 +98,10 @@ export const Stats = () => {
             highlightWords={["Scale"]}
             highlightClass="text-[#FF9494]"
           />
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Metrics that redefine human-computer interaction.
-          </p>
+          <TextBlurReveal
+            text="Metrics that redefine human-computer interaction."
+            className="text-lg text-gray-600 dark:text-gray-400 justify-center"
+          />
         </motion.div>
 
         {/* Bento Grid */}

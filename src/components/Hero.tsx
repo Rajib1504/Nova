@@ -21,6 +21,7 @@ import {
 
 import { BlobButton } from "./BlobButton";
 import { Text3DReveal } from "./Text3DReveal";
+import { TextBlurReveal } from "./TextBlurReveal";
 import Image from "next/image";
 
 export const Hero = () => {
@@ -125,16 +126,13 @@ export const Hero = () => {
           />
         </div>
 
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-6 text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-2xl font-sans font-medium leading-relaxed"
-        >
-          Accelerate your deep work. Nova AI autonomously triages your
-          communications, aligns your schedule, and synthesizes contextual
-          responses in milliseconds.
-        </motion.p>
+        <div className="z-20 relative w-full flex justify-center">
+          <TextBlurReveal
+            text="Connect all your tools to a single, hyper-intelligent nervous system. Stop managing your work and start orchestrating it."
+            animationType="time"
+            className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl leading-relaxed justify-center"
+          />
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}

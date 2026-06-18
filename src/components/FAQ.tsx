@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, HelpCircle } from "lucide-react";
 import { Text3DReveal } from "./Text3DReveal";
+import { TextBlurReveal } from "./TextBlurReveal";
 
 const faqs = [
   {
@@ -54,9 +55,10 @@ export const FAQ = () => {
             highlightWords={["Inquiries"]}
             highlightClass="text-[#FF9494]"
           />
-          <p className="text-lg text-gray-600 dark:text-gray-400">
-            Advanced parameters regarding the Neural Core execution.
-          </p>
+          <TextBlurReveal
+            text="Advanced parameters regarding the Neural Core execution."
+            className="text-lg text-gray-600 dark:text-gray-400 justify-center"
+          />
         </motion.div>
 
         {/* Accordion List */}

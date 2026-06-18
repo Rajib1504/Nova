@@ -49,6 +49,7 @@ export const TopHeader = ({
           width={40}
           height={40}
           className="w-10 h-10"
+          style={{ width: "auto", height: "auto" }}
         />
         <span className="text-2xl font-black font-heading tracking-tighter text-[#2D2A26] dark:text-[#F0EEEC]">
           NOVA

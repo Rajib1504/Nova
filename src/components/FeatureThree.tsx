@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Calendar, Mail, Layout, Menu, Settings } from "lucide-react";
 import { BlobButton } from "./BlobButton";
 import { Text3DReveal } from "./Text3DReveal";
+import { TextBlurReveal } from "./TextBlurReveal";
 
 export const FeatureThree = () => {
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
@@ -91,11 +92,10 @@ export const FeatureThree = () => {
           highlightWords={["Total", "Control"]}
           highlightClass="text-[#FF9494]"
         />
-        <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
-          The ultimate command center. Seamlessly shift between inbox triage,
-          schedule alignment, and neural synthesis without ever switching tabs.
-          Hover to expand protocols.
-        </p>
+        <TextBlurReveal
+          text="The ultimate command center. Seamlessly shift between inbox triage, schedule alignment, and neural synthesis without ever switching tabs. Hover to expand protocols."
+          className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed text-center"
+        />
       </motion.div>
 
       {/* 3-Column Interactive Dashboard */}

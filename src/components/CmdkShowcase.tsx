@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, FileText, Reply, Calendar } from "lucide-react";
 import { Text3DReveal } from "./Text3DReveal";
+import { TextBlurReveal } from "./TextBlurReveal";
 
 const commands = [
   { text: "Summarize this 50-reply thread...", icon: FileText, color: "text-blue-500" },
@@ -72,15 +73,10 @@ export function CmdkShowcase() {
           text="Work at the speed of thought."
           className="text-4xl md:text-5xl font-black font-heading tracking-tight text-[#2D2A26] dark:text-[#F0EEEC] mb-4"
         />
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-2xl mb-12"
-        >
-          Ditch the mouse. Nova’s context-aware Command Palette gives you instant access to AI triage and automated workflows without ever lifting your hands.
-        </motion.p>
+        <TextBlurReveal 
+          text="Press Shift + / anywhere to instantly synthesize context, triage incoming data streams, or deploy automation protocols. Experience true cognitive augmentation."
+          className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-12 max-w-2xl leading-relaxed justify-center"
+        />
 
         {/* The Mock Palette */}
         <motion.div 

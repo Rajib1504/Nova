@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { Calendar as CalendarIcon, Clock, Users, ArrowRight } from "lucide-react";
 import { BlobButton } from "./BlobButton";
 import { Text3DReveal } from "./Text3DReveal";
+import { TextBlurReveal } from "./TextBlurReveal";
 
 export const FeatureTwo = () => {
   return (
@@ -146,15 +147,10 @@ export const FeatureTwo = () => {
             />
           </motion.div>
 
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: 0.2 }}
+          <TextBlurReveal
+            text="The neural core autonomously monitors your time constraints, triages overlapping meetings, and prioritizes essential protocols so you can focus on deep work."
             className="text-lg text-gray-600 dark:text-gray-300 mb-10 max-w-lg leading-relaxed"
-          >
-            The neural core autonomously monitors your time constraints, triages overlapping meetings, and prioritizes essential protocols so you can focus on deep work.
-          </motion.p>
+          />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
