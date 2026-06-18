@@ -143,6 +143,12 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
               >
                 <DropdownMenuItem
                   className="cursor-pointer font-medium hover:bg-black/5 dark:hover:bg-white/10 p-2.5 rounded-lg focus:bg-black/5 dark:focus:bg-white/10"
+                  onClick={() => (window.location.href = "/command-center")}
+                >
+                  Command Center
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer font-medium hover:bg-black/5 dark:hover:bg-white/10 p-2.5 rounded-lg focus:bg-black/5 dark:focus:bg-white/10"
                   onClick={() => (window.location.href = "/dashboard")}
                 >
                   Dashboard
