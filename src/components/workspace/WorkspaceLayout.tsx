@@ -7,6 +7,7 @@ import { GmailPanel } from "./GmailPanel";
 import { CalendarPanel } from "./CalendarPanel";
 import { AgentChatPanel } from "./AgentChatPanel";
 import { KeyboardShortcutsOverlay } from "./KeyboardShortcutsOverlay";
+import { CommandPalette } from "./CommandPalette";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { toggleThemeWithTransition } from "@/utils/theme";
 
@@ -290,6 +291,10 @@ export const WorkspaceLayout = () => {
       <KeyboardShortcutsOverlay
         isOpen={showShortcutsOverlay}
         onClose={() => setShowShortcutsOverlay(false)}
+      />
+
+      <CommandPalette
+        onOpenShortcuts={() => setShowShortcutsOverlay(true)}
       />
     </div>
   );

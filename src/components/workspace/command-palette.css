@@ -1,0 +1,107 @@
+/* Command Palette Root */
+.nova-cmdk-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  width: 100%;
+  max-width: 600px;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  animation: cmdk-scale-in 0.15s ease-out forwards;
+}
+
+.nova-cmdk-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: -1;
+  border-radius: 22px;
+  animation: cmdk-fade-in 0.15s ease-out forwards;
+}
+
+.nova-cmdk-content {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border-radius: 24px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 30px 60px -10px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  position: relative;
+}
+
+.dark .nova-cmdk-content {
+  background: rgba(26, 29, 35, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 30px 60px -10px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* Groups */
+.nova-cmdk-group [cmdk-group-heading] {
+  padding: 12px 16px 8px;
+  color: #888;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Items */
+.nova-cmdk-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 12px;
+  margin: 4px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  color: #2d2a26;
+}
+
+.dark .nova-cmdk-item {
+  color: #f0eeec;
+}
+
+/* Hover / Selected State */
+.nova-cmdk-item[data-selected="true"] {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #000;
+}
+
+.dark .nova-cmdk-item[data-selected="true"] {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Animations */
+@keyframes cmdk-scale-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes cmdk-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

@@ -113,7 +113,15 @@ export const GmailContent: React.FC<GmailContentProps> = ({
     if (focusedEmailIndex < 0 || !isActiveTab) return;
     const el = emailRowRefs.current.get(focusedEmailIndex);
     if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
-  }, [focusedEmailIndex, isActiveTab]);
+
+    // Inform the Command Palette which email is currently focused
+    const thread = groupedThreads[focusedEmailIndex];
+    if (thread && thread.emails.length > 0) {
+      document.dispatchEvent(
+        new CustomEvent("nova-focus-email", { detail: thread.emails[0] })
+      );
+    }
+  }, [focusedEmailIndex, isActiveTab, groupedThreads]);
 
   // Open the focused thread when Enter is pressed (openTrigger bumps)
   React.useEffect(() => {
@@ -127,6 +135,13 @@ export const GmailContent: React.FC<GmailContentProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openTrigger]);
+
+  // Handle blurring when leaving the tab
+  React.useEffect(() => {
+    if (!isActiveTab) {
+      document.dispatchEvent(new CustomEvent("nova-blur-email"));
+    }
+  }, [isActiveTab]);
 
   return (
     <TabsContent
