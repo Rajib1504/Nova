@@ -18,16 +18,16 @@ import { LandingCommandPalette } from "@/components/LandingCommandPalette";
 import { toggleThemeWithTransition } from "@/utils/theme";
 
 export default function LandingPage() {
-  const [theme, setTheme] = useState("light");
+  const [theme, setTheme] = useState("dark");
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("nova-theme");
-    if (savedTheme === "dark" || (!savedTheme && document.documentElement.classList.contains("dark"))) {
-      setTheme("dark");
-      document.documentElement.classList.add("dark");
-    } else {
+    if (savedTheme === "light") {
       setTheme("light");
       document.documentElement.classList.remove("dark");
+    } else {
+      setTheme("dark");
+      document.documentElement.classList.add("dark");
     }
   }, []);
 

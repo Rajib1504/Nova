@@ -126,7 +126,7 @@ export const Hero = () => {
           />
         </div>
 
-        <div className="z-20 relative w-full flex justify-center">
+        <div className="z-20 relative w-full mt-8 flex justify-center">
           <TextBlurReveal
             text="Connect all your tools to a single, hyper-intelligent nervous system. Stop managing your work and start orchestrating it."
             animationType="time"
@@ -138,7 +138,7 @@ export const Hero = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-10 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 relative z-20"
+          className="mt-6 flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 relative z-20"
         >
           <a href="/dashboard">
             <BlobButton
