@@ -79,6 +79,17 @@ export const TopHeader = ({
 
       {/* Right Side Controls */}
       <div className="flex items-center justify-end gap-6 w-1/4">
+        {/* Cmd+K Hint Badge */}
+        <div
+          className="w-18 h-12 rounded-full flex items-center justify-center bg-[#FFF5E4] dark:bg-[#1A1D23] 
+                       text-gray-400 dark:text-gray-500 
+                       focus:outline-none focus:ring-2 focus:ring-[#FF9494]/50 transition-all
+                       shadow-[inset_4px_4px_8px_#E5DCD0,inset_-4px_-4px_8px_#FFFFFF] 
+                       dark:shadow-[inset_4px_4px_8px_#121418,inset_-4px_-4px_8px_#22262e]"
+        >
+          ⌘K
+        </div>
+
         {/* Theme Toggle (Neumorphic Button) */}
         <button
           onClick={toggleTheme}
