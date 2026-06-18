@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, FileText, Reply, Calendar } from "lucide-react";
+import { Text3DReveal } from "./Text3DReveal";
 
 const commands = [
   { text: "Summarize this 50-reply thread...", icon: FileText, color: "text-blue-500" },
@@ -67,14 +68,10 @@ export function CmdkShowcase() {
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#FF9494]/10 dark:bg-[#FF9494]/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10 flex flex-col items-center text-center">
-        <motion.h2 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+        <Text3DReveal 
+          text="Work at the speed of thought."
           className="text-4xl md:text-5xl font-black font-heading tracking-tight text-[#2D2A26] dark:text-[#F0EEEC] mb-4"
-        >
-          Work at the speed of thought.
-        </motion.h2>
+        />
         <motion.p 
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

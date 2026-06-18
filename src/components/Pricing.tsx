@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion, useSpring, useMotionValue } from "framer-motion";
 import { Check } from "lucide-react";
 import { BlobButton } from "@/components/BlobButton";
+import { Text3DReveal } from "./Text3DReveal";
 
 // Smooth counting number for the price
 const AnimatedPrice = ({ value }: { value: number }) => {
@@ -85,12 +86,12 @@ export const Pricing = () => {
           viewport={{ once: true, margin: "-100px" }}
           className="text-center mb-12 flex flex-col items-center"
         >
-          <h2 className="text-4xl md:text-6xl font-bold font-heading tracking-tight text-gray-900 dark:text-white mb-6">
-            Invest in{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF7B7B] to-[#FF9494]">
-              Autonomy
-            </span>
-          </h2>
+          <Text3DReveal 
+            text="Invest in Autonomy"
+            className="text-4xl md:text-6xl font-bold font-heading tracking-tight text-gray-900 dark:text-white mb-6"
+            highlightWords={["Autonomy"]}
+            highlightClass="text-transparent bg-clip-text bg-gradient-to-r from-[#FF7B7B] to-[#FF9494]"
+          />
           <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mb-10">
             Select the protocol that aligns with your organizational velocity.
             Save 20% on all Vanguard plans with annual synthesis.

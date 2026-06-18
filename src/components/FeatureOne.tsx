@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion, Variants } from "framer-motion";
 import { Sparkles, ArrowRight, CornerDownRight } from "lucide-react";
 import { BlobButton } from "./BlobButton";
+import { Text3DReveal } from "./Text3DReveal";
 
 const TypewriterText = ({
   text,
@@ -92,34 +93,32 @@ export const FeatureOne = () => {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="relative inline-block"
           >
-            <h2 className="text-4xl md:text-6xl font-bold font-heading tracking-tight leading-[1.1] text-gray-900 dark:text-white mb-6">
-              AI That <br />
-              <span className="relative">
-                Writes For You
-                {/* Hand-drawn SVG Underline Doodle */}
-                <motion.svg
-                  className="absolute -bottom-2 left-0 w-full h-4 text-[#FF9494] overflow-visible"
-                  viewBox="0 0 200 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <motion.path
-                    d="M 5 15 Q 50 0 100 10 T 195 5"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    whileInView={{ pathLength: 1, opacity: 1 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{
-                      duration: 1.2,
-                      delay: 0.5,
-                      ease: "easeInOut",
-                    }}
-                  />
-                </motion.svg>
-              </span>
-            </h2>
+            <Text3DReveal
+              text={`AI That ${'\n'} Writes For You`}
+              className="text-4xl md:text-6xl font-bold font-heading tracking-tight leading-[1.1] text-gray-900 dark:text-white mb-6 !justify-start"
+            />
+            {/* Hand-drawn SVG Underline Doodle */}
+            <motion.svg
+              className="absolute bottom-2 left-0 w-full h-4 text-[#FF9494] overflow-visible pointer-events-none"
+              viewBox="0 0 200 20"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <motion.path
+                d="M 5 15 Q 50 0 100 10 T 195 5"
+                stroke="currentColor"
+                strokeWidth="4"
+                strokeLinecap="round"
+                initial={{ pathLength: 0, opacity: 0 }}
+                whileInView={{ pathLength: 1, opacity: 1 }}
+                viewport={{ once: true, margin: "-100px" }}
+                transition={{
+                  duration: 1.2,
+                  delay: 0.5,
+                  ease: "easeInOut",
+                }}
+              />
+            </motion.svg>
           </motion.div>
 
           <motion.p

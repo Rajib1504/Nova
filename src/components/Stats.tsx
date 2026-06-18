@@ -7,6 +7,7 @@ import {
   useSpring,
   useMotionValue,
 } from "framer-motion";
+import { Text3DReveal } from "./Text3DReveal";
 
 // Custom hook to animate the number based on whether it is "active"
 const AnimatedNumber = ({
@@ -90,9 +91,12 @@ export const Stats = () => {
           viewport={{ once: true, margin: "-100px" }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-gray-900 dark:text-white mb-4">
-            Unprecedented <span className="text-[#FF9494]">Scale</span>
-          </h2>
+          <Text3DReveal
+            text="Unprecedented Scale"
+            className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-gray-900 dark:text-white mb-4"
+            highlightWords={["Scale"]}
+            highlightClass="text-[#FF9494]"
+          />
           <p className="text-lg text-gray-600 dark:text-gray-400">
             Metrics that redefine human-computer interaction.
           </p>

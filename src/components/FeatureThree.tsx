@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Sparkles, Calendar, Mail, Layout, Menu, Settings } from "lucide-react";
 import { BlobButton } from "./BlobButton";
+import { Text3DReveal } from "./Text3DReveal";
 
 export const FeatureThree = () => {
   const [hoveredCol, setHoveredCol] = useState<number | null>(null);
@@ -84,10 +85,12 @@ export const FeatureThree = () => {
         <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-[#FF9494] mb-4">
           <Layout className="w-5 h-5" />
         </div>
-        <h2 className="text-4xl md:text-6xl font-bold font-heading tracking-tight leading-[1.1] text-gray-900 dark:text-white mb-6">
-          One Workspace, <br />
-          <span className="text-[#FF9494]">Total Control</span>
-        </h2>
+        <Text3DReveal
+          text={`One Workspace ${"\n"} Total Control`}
+          className="text-4xl md:text-6xl font-bold font-heading tracking-tight leading-[1.1] text-gray-900 dark:text-white mb-6"
+          highlightWords={["Total", "Control"]}
+          highlightClass="text-[#FF9494]"
+        />
         <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
           The ultimate command center. Seamlessly shift between inbox triage,
           schedule alignment, and neural synthesis without ever switching tabs.

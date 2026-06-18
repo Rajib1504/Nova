@@ -3,6 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Calendar as CalendarIcon, Clock, Users, ArrowRight } from "lucide-react";
 import { BlobButton } from "./BlobButton";
+import { Text3DReveal } from "./Text3DReveal";
 
 export const FeatureTwo = () => {
   return (
@@ -137,10 +138,12 @@ export const FeatureTwo = () => {
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <h2 className="text-4xl md:text-6xl font-bold font-heading tracking-tight leading-[1.1] text-gray-900 dark:text-white mb-6">
-              Your Calendar, <br />
-              <span className="text-blue-500">Effortless</span>
-            </h2>
+            <Text3DReveal
+              text={`Your Calendar, ${'\n'} Effortless`}
+              className="text-4xl md:text-6xl font-bold font-heading tracking-tight leading-[1.1] text-gray-900 dark:text-white mb-6 !justify-start"
+              highlightWords={["Effortless"]}
+              highlightClass="text-blue-500"
+            />
           </motion.div>
 
           <motion.p

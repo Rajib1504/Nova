@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { BlobButton } from "./BlobButton";
+import { Text3DReveal } from "./Text3DReveal";
 import Image from "next/image";
 
 export const Hero = () => {
@@ -116,15 +117,13 @@ export const Hero = () => {
         </motion.div>
 
         {/* Clean, Premium Typography Headline */}
-        <motion.h1
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="text-5xl md:text-7xl font-bold font-heading tracking-tight leading-[1.1] text-[#1A1D23] dark:text-white"
-        >
-          Orchestrate Your Workflow <br />
-          with Autonomous Intelligence
-        </motion.h1>
+        <div className="text-center z-20">
+          <Text3DReveal
+            text="Orchestrate Your Workflow \n with Autonomous Intelligence"
+            animationType="time"
+            className="text-5xl md:text-7xl font-bold font-heading tracking-tight leading-[1.1] text-[#1A1D23] dark:text-white"
+          />
+        </div>
 
         <motion.p
           initial={{ opacity: 0, y: 20 }}

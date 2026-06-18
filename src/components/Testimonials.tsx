@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { motion } from "framer-motion";
+import { Text3DReveal } from "./Text3DReveal";
 
 const testimonials = [
   {
@@ -38,9 +39,12 @@ export const Testimonials = () => {
         viewport={{ once: true }}
         className="w-full text-center mb-16 px-4"
       >
-        <h2 className="text-3xl md:text-5xl font-bold font-heading tracking-tight text-gray-900 dark:text-white">
-          Trusted by the <span className="text-[#FF9494]">Vanguard</span>
-        </h2>
+        <Text3DReveal
+          text="Trusted by the Vanguard"
+          className="text-3xl md:text-5xl font-bold font-heading tracking-tight text-gray-900 dark:text-white"
+          highlightWords={["Vanguard"]}
+          highlightClass="text-[#FF9494]"
+        />
       </motion.div>
 
       {/* Marquee Container */}

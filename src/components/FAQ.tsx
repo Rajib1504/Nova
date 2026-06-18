@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown, HelpCircle } from "lucide-react";
+import { Text3DReveal } from "./Text3DReveal";
 
 const faqs = [
   {
@@ -47,9 +48,12 @@ export const FAQ = () => {
           <div className="w-12 h-12 rounded-2xl bg-[#FFE3E1] flex items-center justify-center text-[#FF9494] mb-6 shadow-sm">
             <HelpCircle className="w-6 h-6" />
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-gray-900 dark:text-white mb-4">
-            Protocol <span className="text-[#FF9494]">Inquiries</span>
-          </h2>
+          <Text3DReveal
+            text="Protocol Inquiries"
+            className="text-4xl md:text-5xl font-bold font-heading tracking-tight text-gray-900 dark:text-white mb-4"
+            highlightWords={["Inquiries"]}
+            highlightClass="text-[#FF9494]"
+          />
           <p className="text-lg text-gray-600 dark:text-gray-400">
             Advanced parameters regarding the Neural Core execution.
           </p>
