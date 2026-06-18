@@ -1,10 +1,11 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 import Image from "next/image";
-import { MoonStar, Sun } from "lucide-react";
+import { MoonStar, Sun, Loader2 } from "lucide-react";
 import { BlobButton } from "./BlobButton";
 import { useSession, signIn, signOut } from "next-auth/react";
+import toast from "react-hot-toast";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,11 +22,42 @@ interface NavbarProps {
 export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
   const { scrollY } = useScroll();
   const [isScrolled, setIsScrolled] = useState(false);
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+  const [isInitializing, setIsInitializing] = useState(false);
 
   useMotionValueEvent(scrollY, "change", (latest) => {
     setIsScrolled(latest > 50);
   });
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      const justLoggedIn = sessionStorage.getItem("just_logged_in");
+      if (justLoggedIn === "true") {
+        sessionStorage.removeItem("just_logged_in");
+        toast.success("Neural Core Initialized Successfully!", { id: "auth" });
+      } else if (!sessionStorage.getItem("welcome_shown")) {
+        sessionStorage.setItem("welcome_shown", "true");
+        toast.success(`Welcome back, ${session.user?.name || "Nova User"}! Database synchronized.`);
+      }
+    } else if (status === "unauthenticated") {
+      setIsInitializing(false);
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        const error = url.searchParams.get("error");
+        if (error) {
+          toast.error("Authentication Failed. Please try again.", { id: "auth" });
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    }
+  }, [status, session]);
+
+  const handleInitialize = () => {
+    setIsInitializing(true);
+    sessionStorage.setItem("just_logged_in", "true");
+    toast.loading("Establishing Secure Connection...", { id: "auth" });
+    signIn("google");
+  };
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 flex justify-center mt-4">
@@ -125,28 +157,38 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div onClick={() => signIn("google")}>
+            <div onClick={handleInitialize} className={isInitializing ? "pointer-events-none opacity-80" : ""}>
               <BlobButton
                 className="interactive"
                 blobColor="#FF7B7B"
                 textColor="#FF7B7B"
                 hoverTextColor="#FFFFFF"
                 size="md"
+                disabled={isInitializing}
               >
-                <span>Initialize</span>
-                <motion.svg
-                  className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M14 5l7 7m0 0l-7 7m7-7H3"
-                  />
-                </motion.svg>
+                {isInitializing ? (
+                  <>
+                    <span>Connecting...</span>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  </>
+                ) : (
+                  <>
+                    <span>Initialize</span>
+                    <motion.svg
+                      className="w-4 h-4 transform group-hover:translate-x-1 transition-transform"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M14 5l7 7m0 0l-7 7m7-7H3"
+                      />
+                    </motion.svg>
+                  </>
+                )}
               </BlobButton>
             </div>
           )}
@@ -155,3 +197,4 @@ export const Navbar = ({ theme, toggleTheme }: NavbarProps) => {
     </div>
   );
 };
+

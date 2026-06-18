@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { Tabs } from "@/components/ui/tabs";
 import { api } from "@/lib/axios";
+import toast from "react-hot-toast";
 import { GmailSidebar, SIDEBAR_ITEMS } from "./gmail/GmailSidebar";
 import { GmailContent } from "./gmail/GmailContent";
 import { GmailCompose } from "./gmail/GmailCompose";
@@ -48,12 +49,20 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
   const { isNovaControlled, clearNovaDraft } = useNovaContext();
 
   const handleCompose = () => {
+    if (!isConnected) {
+      toast.error("Gmail connection is required to compose emails.");
+      return;
+    }
     setReplyTo("");
     setReplySubject("");
     setIsComposing(true);
   };
 
   const handleReply = (to: string, subject: string) => {
+    if (!isConnected) {
+      toast.error("Gmail connection is required to reply to emails.");
+      return;
+    }
     setReplyTo(to);
     setReplySubject(subject);
     setIsComposing(true);
@@ -115,6 +124,18 @@ export const GmailPanel: React.FC<GmailPanelProps> = ({
       isMounted = false;
     };
   }, [fetchEmails, handleRestore]);
+
+  // Silent polling hook to automatically pull in background-synced emails
+  // We know the initial sync grabs about 40-50 emails. If we have between 1 and 49 emails,
+  // the background worker is likely still processing the rest.
+  useEffect(() => {
+    if (isConnected && emails.length > 0 && emails.length < 40) {
+      const interval = setInterval(() => {
+        fetchEmails(true); // silent fetch, doesn't trigger loading spinner
+      }, 5000); // Check every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [isConnected, emails.length, fetchEmails]);
 
   const getFilteredEmails = (label: string) => {
     let filtered = emails;

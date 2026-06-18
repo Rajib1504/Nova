@@ -28,6 +28,7 @@ import {
   addMinutes,
 } from "date-fns";
 import axios from "axios";
+import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { BlobButton } from "../BlobButton";
 import { CalendarEvent } from "@/types/models";
@@ -295,6 +296,10 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
               <BlobButton
                 size="sm"
                 onClick={() => {
+                  if (!isConnected) {
+                    toast.error("Calendar connection is required to create events.");
+                    return;
+                  }
                   setFormData({
                     summary: "",
                     startTime: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
@@ -362,6 +367,10 @@ export const CalendarPanel: React.FC<CalendarPanelProps> = ({
             </button>
             <button
               onClick={() => {
+                if (!isConnected) {
+                  toast.error("Calendar connection is required to create events.");
+                  return;
+                }
                 onToggleCollapse();
                 setTimeout(() => {
                   setFormData({

@@ -41,12 +41,12 @@ export const toggleThemeWithTransition = (
     
     document.documentElement.animate(
       {
-        clipPath: isDark ? clipPath : [...clipPath].reverse(),
+        clipPath: clipPath,
       },
       {
         duration: 500,
         easing: "ease-in-out",
-        pseudoElement: isDark ? "::view-transition-new(root)" : "::view-transition-old(root)",
+        pseudoElement: "::view-transition-new(root)",
       }
     );
   });

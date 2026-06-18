@@ -4,11 +4,10 @@ import { emails, calendarEvents, users } from './src/db/schema.js';
 import { eq } from 'drizzle-orm';
 
 async function wipe() {
-  const userId = "104494786104283262460";
-  console.log(`Wiping emails and events for user ${userId}...`);
+  console.log(`Wiping all emails and calendar events from the database...`);
   
-  const emailRes = await db.delete(emails).where(eq(emails.userId, userId)).returning();
-  const calRes = await db.delete(calendarEvents).where(eq(calendarEvents.userId, userId)).returning();
+  const emailRes = await db.delete(emails).returning();
+  const calRes = await db.delete(calendarEvents).returning();
   
   console.log(`Deleted ${emailRes.length} emails and ${calRes.length} calendar events.`);
   process.exit(0);

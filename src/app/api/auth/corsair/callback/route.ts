@@ -47,6 +47,7 @@ export async function GET(request: NextRequest) {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                "ngrok-skip-browser-warning": "true",
                 ...(cookieHeader ? { "Cookie": cookieHeader } : {})
               },
               ...(result.plugin === "gmail" ? { body: JSON.stringify({ offset: 0 }) } : {})
