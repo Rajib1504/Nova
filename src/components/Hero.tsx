@@ -100,6 +100,21 @@ export const Hero = () => {
         style={{ y, opacity }}
         className="relative z-10 flex flex-col items-center w-full max-w-5xl mt-12"
       >
+        {/* Keyboard Superpower Badge */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-8 flex items-center gap-3 px-4 py-2 rounded-full bg-white/30 dark:bg-black/20 backdrop-blur-md border border-black/10 dark:border-white/10 shadow-sm"
+        >
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+            Your keyboard is your superpower. Discover shortcuts with
+          </span>
+          <kbd className="font-mono bg-white/70 dark:bg-black/30 px-2 py-0.5 rounded border border-gray-200 dark:border-white/10 text-xs font-bold text-[#FF9494]">
+            shift + /
+          </kbd>
+        </motion.div>
+
         {/* Clean, Premium Typography Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
