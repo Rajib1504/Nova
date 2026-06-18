@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { motion, useSpring, useMotionValue } from "framer-motion";
-import { Check } from "lucide-react";
+import { motion, useSpring, useMotionValue, AnimatePresence } from "framer-motion";
+import { Check, X, Lock } from "lucide-react";
 import { BlobButton } from "@/components/BlobButton";
 import { Text3DReveal } from "./Text3DReveal";
 
@@ -28,6 +28,8 @@ const AnimatedPrice = ({ value }: { value: number }) => {
 
 export const Pricing = () => {
   const [isAnnual, setIsAnnual] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState("");
 
   const plans = [
     {
@@ -187,16 +189,21 @@ export const Pricing = () => {
 
                 <div className="mt-auto w-full">
                   {plan.isPopular ? (
-                    <div className="w-full h-[52px]">
-                      {/* The BlobButton manages its own height/padding, we just wrap it to ensure space */}
-                      <a href="/dashboard"><BlobButton>Initialize Vanguard</BlobButton></a>
+                    <div 
+                      className="w-full h-[52px] cursor-pointer"
+                      onClick={() => { setSelectedPlan(plan.name); setIsModalOpen(true); }}
+                    >
+                      <BlobButton>Initialize Vanguard</BlobButton>
                     </div>
                   ) : (
-                    <a href="/dashboard">
+                    <div 
+                      className="w-full cursor-pointer"
+                      onClick={() => { setSelectedPlan(plan.name); setIsModalOpen(true); }}
+                    >
                       <BlobButton className="w-full h-[52px]">
                         Select Protocol
                       </BlobButton>
-                    </a>
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -204,6 +211,80 @@ export const Pricing = () => {
           })}
         </div>
       </div>
+
+      {/* V2 Waitlist Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsModalOpen(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"
+            />
+            
+            {/* Modal Card */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-lg p-8 glass bg-white/90 dark:bg-[#1A1D23]/90 border border-white/60 dark:border-white/10 rounded-3xl shadow-2xl flex flex-col items-center text-center overflow-hidden z-10"
+            >
+              {/* Glow behind the modal */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-1/2 bg-[#FF9494]/20 blur-[60px] pointer-events-none rounded-t-3xl" />
+              
+              <button 
+                onClick={() => setIsModalOpen(false)}
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/5 text-gray-500 hover:text-gray-800 dark:hover:text-white transition-colors z-20"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="w-16 h-16 rounded-2xl bg-[#FFE3E1] dark:bg-[#FF9494]/20 flex items-center justify-center text-[#FF9494] mb-6 relative z-10 shadow-inner border border-white/40 dark:border-white/5">
+                <Lock className="w-8 h-8" />
+              </div>
+
+              <h3 className="text-2xl md:text-3xl font-bold font-heading tracking-tight text-gray-900 dark:text-white mb-3 relative z-10">
+                Nova V2 <span className="text-[#FF9494]">Approaching</span>
+              </h3>
+              
+              <p className="text-gray-600 dark:text-gray-300 mb-8 relative z-10 leading-relaxed text-sm md:text-base">
+                You selected the <strong className="text-gray-900 dark:text-white font-bold">{selectedPlan}</strong> protocol. 
+                We are currently operating in a closed, invite-only beta. Public subscriptions and autonomous billing will unlock in Version 2.0.
+              </p>
+
+              <div className="w-full relative z-10">
+                <form 
+                  onSubmit={(e) => { 
+                    e.preventDefault(); 
+                    setIsModalOpen(false); 
+                    // In a real app, send email to backend here
+                  }}
+                  className="flex flex-col gap-3"
+                >
+                  <div className="relative">
+                    <input 
+                      type="email" 
+                      placeholder="Enter your email for early access" 
+                      required
+                      className="w-full px-5 py-4 rounded-xl bg-white/50 dark:bg-black/40 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF9494]/50 transition-all shadow-inner"
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    className="w-full py-4 rounded-xl bg-gradient-to-r from-[#FF7B7B] to-[#FF9494] text-white font-bold tracking-wide shadow-lg hover:shadow-[0_8px_25px_rgba(255,148,148,0.4)] hover:-translate-y-0.5 transition-all duration-300"
+                  >
+                    Secure Your Spot
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
