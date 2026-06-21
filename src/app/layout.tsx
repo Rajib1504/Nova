@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
-import { CustomCursor } from "@/components/CustomCursor";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,7 +44,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col relative overflow-x-hidden" suppressHydrationWarning>
         <AuthProviders>
           <AnimatedBackground />
-          <CustomCursor />
+
           {children}
           <Toaster 
             position="bottom-right"
