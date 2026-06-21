@@ -139,6 +139,12 @@ export const TopHeader = ({
             >
               Command Center
             </DropdownMenuItem>
+            <DropdownMenuItem
+              className="cursor-pointer font-medium hover:bg-black/5 dark:hover:bg-white/10 p-2.5 rounded-lg focus:bg-black/5 dark:focus:bg-white/10"
+              onClick={() => (window.location.href = "/settings")}
+            >
+              Settings
+            </DropdownMenuItem>
             <DropdownMenuSeparator className="bg-black/10 dark:bg-white/10 my-1" />
             <DropdownMenuItem
               onClick={() => signOut({ callbackUrl: "/" })}
