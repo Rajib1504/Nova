@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Send, Hexagon, Check, FileText } from "lucide-react";
+import { Mic, Send, Hexagon, Check, FileText, CalendarDays, CalendarPlus, X } from "lucide-react";
 import Image from "next/image";
 import axios from "axios";
 import { useSession } from "next-auth/react";
@@ -13,6 +13,13 @@ interface Message {
   id: string;
   sender: "user" | "ai" | "system";
   text: string;
+}
+
+interface CalendarDraft {
+  summary: string;
+  description: string;
+  startTime: string;
+  endTime: string;
 }
 
 const INITIAL_MESSAGES: Message[] = [
@@ -36,6 +43,8 @@ export const AgentChatPanel = ({
   const [inputValue, setInputValue] = useState("");
   const [activeDraft, setActiveDraft] = useState<any>(null);
   const [draftAction, setDraftAction] = useState<"send" | "save" | null>(null);
+  const [activeEvent, setActiveEvent] = useState<CalendarDraft | null>(null);
+  const [eventAction, setEventAction] = useState<"create" | "skip" | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -143,6 +152,47 @@ export const AgentChatPanel = ({
       toast.error(error.response?.data?.error || `Could not ${action === "send" ? "send" : "save"} the email.`);
     } finally {
       setDraftAction(null);
+    }
+  };
+
+  const handleCalendarAction = async (action: "create" | "skip") => {
+    if (!activeEvent || eventAction) return;
+    setEventAction(action);
+
+    if (action === "skip") {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: "ai",
+          text: "Okay, I skipped adding this event to your calendar.",
+        },
+      ]);
+      setActiveEvent(null);
+      setEventAction(null);
+      return;
+    }
+
+    try {
+      await axios.post("/api/calendar/modify", {
+        action: "create",
+        ...activeEvent,
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: "ai",
+          text: `Added <strong>${activeEvent.summary}</strong> to your calendar.`,
+        },
+      ]);
+      setActiveEvent(null);
+      router.refresh();
+      try { await axios.post("/api/calendar/sync"); } catch (syncErr) { console.error("Calendar sync failed:", syncErr); }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Could not add the event to your calendar.");
+    } finally {
+      setEventAction(null);
     }
   };
 
@@ -265,6 +315,22 @@ export const AgentChatPanel = ({
         aiText = aiText.replace(composeRegex, "").trim();
         if (!aiText) {
           aiText = `I have opened the compose window and drafted the email:<br/><br/><strong>To:</strong> ${match[1]}<br/><strong>Subject:</strong> ${match[2]}<br/><br/><div style="padding-left:10px; border-left: 2px solid #FF9494; color: gray;">${parsedBody.replace(/\n/g, "<br/>")}</div><br/>You can edit it now. Once you're ready, click <strong>Confirm Draft</strong>.`;
+        }
+      }
+
+      const calendarRegex =
+        /<UI_COMMAND\s+type="CALENDAR"\s+summary="([^"]*)"\s+description="([^"]*)"\s+startTime="([^"]*)"\s+endTime="([^"]*)"\s*\/>/;
+      const calendarMatch = aiText.match(calendarRegex);
+      if (calendarMatch) {
+        setActiveEvent({
+          summary: calendarMatch[1],
+          description: calendarMatch[2],
+          startTime: calendarMatch[3],
+          endTime: calendarMatch[4],
+        });
+        aiText = aiText.replace(calendarRegex, "").trim();
+        if (!aiText) {
+          aiText = "I found the event details. Review them below and choose an action.";
         }
       }
 
@@ -446,6 +512,49 @@ export const AgentChatPanel = ({
             >
               <Check className="h-4 w-4" />
               {draftAction === "send" ? "Sending…" : "Send email"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {activeEvent && (
+        <div className="mx-4 mb-3 rounded-2xl border border-orange-300/40 bg-white/85 p-4 shadow-sm dark:bg-[#23232A]/90">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+              <CalendarDays className="h-4 w-4 text-orange-500" />
+              Review calendar event
+            </div>
+            <button
+              onClick={() => handleCalendarAction("skip")}
+              disabled={!!eventAction}
+              aria-label="Skip calendar event"
+              className="rounded-full p-1 text-gray-400 transition hover:bg-black/5 hover:text-gray-700 disabled:opacity-50 dark:hover:bg-white/5 dark:hover:text-gray-200"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
+            <p><span className="font-semibold">Event:</span> {activeEvent.summary}</p>
+            <p><span className="font-semibold">Starts:</span> {new Date(activeEvent.startTime).toLocaleString()}</p>
+            <p><span className="font-semibold">Ends:</span> {new Date(activeEvent.endTime).toLocaleString()}</p>
+            {activeEvent.description && <p><span className="font-semibold">Details:</span> {activeEvent.description}</p>}
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => handleCalendarAction("skip")}
+              disabled={!!eventAction}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5"
+            >
+              <X className="h-4 w-4" />
+              Skip
+            </button>
+            <button
+              onClick={() => handleCalendarAction("create")}
+              disabled={!!eventAction}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-orange-500 px-3 py-2 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:opacity-50"
+            >
+              <CalendarPlus className="h-4 w-4" />
+              {eventAction === "create" ? "Adding…" : "Add to calendar"}
             </button>
           </div>
         </div>
