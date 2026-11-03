@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, Send, Hexagon } from "lucide-react";
+import { Mic, Send, Hexagon, Check, FileText } from "lucide-react";
 import Image from "next/image";
 import axios from "axios";
 import { useSession } from "next-auth/react";
@@ -35,6 +35,7 @@ export const AgentChatPanel = ({
   const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
   const [inputValue, setInputValue] = useState("");
   const [activeDraft, setActiveDraft] = useState<any>(null);
+  const [draftAction, setDraftAction] = useState<"send" | "save" | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -116,12 +117,34 @@ export const AgentChatPanel = ({
   useEffect(() => {
     if (confirmedDraft) {
       setActiveDraft(confirmedDraft);
-      const systemMessage = `[System: Final draft ready for review. To: ${confirmedDraft.to}, Subject: ${confirmedDraft.subject}, ThreadId: ${confirmedDraft.threadId || "NONE"}, Body: ${confirmedDraft.body}. Please present this to the user and ask for confirmation to send.]`;
-      // Call the API silently
-      sendSilentSystemMessage(systemMessage);
       clearConfirmedDraft();
     }
   }, [confirmedDraft]);
+
+  const handleDraftAction = async (action: "send" | "save") => {
+    if (!activeDraft || draftAction) return;
+    setDraftAction(action);
+    try {
+      await axios.post(`/api/emails/${action === "send" ? "send" : "draft"}`, activeDraft);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: "ai",
+          text: action === "send"
+            ? `Email sent to <strong>${activeDraft.to}</strong>.`
+            : `Email saved to drafts for <strong>${activeDraft.to}</strong>.`,
+        },
+      ]);
+      setActiveDraft(null);
+      router.refresh();
+      try { await axios.post("/api/emails/sync"); } catch (syncErr) { console.error("Sync failed:", syncErr); }
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || `Could not ${action === "send" ? "send" : "save"} the email.`);
+    } finally {
+      setDraftAction(null);
+    }
+  };
 
   const sendSilentSystemMessage = async (prompt: string) => {
     if (!tenantId) return;
@@ -393,6 +416,40 @@ export const AgentChatPanel = ({
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
+
+      {activeDraft && (
+        <div className="mx-4 mb-3 rounded-2xl border border-[#FF9494]/30 bg-white/85 p-4 shadow-sm dark:bg-[#23232A]/90">
+          <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-gray-900 dark:text-white">
+            <FileText className="h-4 w-4 text-[#FF7B7B]" />
+            Review email
+          </div>
+          <div className="space-y-1 text-xs text-gray-600 dark:text-gray-300">
+            <p><span className="font-semibold">To:</span> {activeDraft.to}</p>
+            <p><span className="font-semibold">Subject:</span> {activeDraft.subject || "No subject"}</p>
+          </div>
+          <div className="mt-3 max-h-28 overflow-y-auto whitespace-pre-wrap border-l-2 border-[#FF9494] pl-3 text-sm text-gray-700 dark:text-gray-200">
+            {activeDraft.body}
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => handleDraftAction("save")}
+              disabled={!!draftAction}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 px-3 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:text-gray-200 dark:hover:bg-white/5"
+            >
+              <FileText className="h-4 w-4" />
+              {draftAction === "save" ? "Saving…" : "Save to draft"}
+            </button>
+            <button
+              onClick={() => handleDraftAction("send")}
+              disabled={!!draftAction}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#FF9494] px-3 py-2 text-sm font-semibold text-white transition hover:bg-[#ff8080] disabled:opacity-50"
+            >
+              <Check className="h-4 w-4" />
+              {draftAction === "send" ? "Sending…" : "Send email"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Input Area */}
       <div className="p-4 shrink-0">

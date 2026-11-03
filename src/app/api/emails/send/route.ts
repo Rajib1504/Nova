@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { to, subject, body } = await req.json();
+    const { to, subject, body, threadId } = await req.json();
     if (!to || !body) {
       return NextResponse.json({ error: "Missing 'to' or 'body'" }, { status: 400 });
     }
@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
     const res = await (c as any).gmail.api.messages.send({
       userId: 'me',
       raw: encodedMessage,
+      ...(threadId ? { threadId } : {}),
     });
 
     return NextResponse.json({ success: true, messageId: res.data.id });
