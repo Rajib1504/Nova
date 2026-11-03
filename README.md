@@ -1,6 +1,6 @@
 # 🌌 Nova AI — Your Neural Core for Workflow Automation
 
-**Nova AI** is an intelligent, unified workspace designed to seamlessly orchestrate your digital communications and calendar logistics. Built for the Corsair Automation AI Hackathon, Nova combines a beautiful Superhuman-style interface with an advanced autonomous AI agent that drafts emails, schedules meetings, and organizes your life.
+**Nova AI** is an intelligent, unified workspace designed to seamlessly orchestrate your digital communications and calendar logistics. Built for the Corsair Automation AI, Nova combines a beautiful Superhuman-style interface with an advanced autonomous AI agent that drafts emails, schedules meetings, and organizes your life.
 
 ![Nova AI Workspace](public/logo.svg)
 
@@ -83,4 +83,4 @@ When connecting your Google account, you will see a screen warning that **"Googl
 
 ---
 
-## 🏆 Built for the Corsair Automation AI Hackathon 2026
+## 🏆 Built to automate your workflow and save time 
